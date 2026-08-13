@@ -1,6 +1,6 @@
 __pycache__/
 *.pyc
-models/
+/models/
 venv/
 node_modules/
 .env
