@@ -1,5 +1,5 @@
 // Base URL of the Node/Express + MongoDB auth server (see /server)
-export const AUTH_BACKEND = "https://schemesaathi-auth.onrender.com ";
+export const AUTH_BACKEND = "https://schemesaathi-auth.onrender.com";
 
 export async function apiPost(path, body, token) {
   const res = await fetch(`${AUTH_BACKEND}${path}`, {
