@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SchemeSaathi – Government Scheme Simplifier</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root {
+    --saffron: #FF6B2B; --saffron-light: #FF8F5A; --saffron-pale: #FFF4EE;
+    --green: #138808; --green-light: #1aa810; --green-pale: #F0FAF0;
+    --navy: #0A1628; --navy-mid: #1A2B47; --navy-soft: #243554;
+    --gold: #D4A017; --gold-light: #F5C842;
+    --white: #FFFFFF; --off-white: #FAFAF8;
+    --gray-100: #F3F4F6; --gray-200: #E5E7EB; --gray-400: #9CA3AF;
+    --gray-600: #4B5563; --gray-800: #1F2937;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.08); --shadow-md: 0 4px 16px rgba(0,0,0,0.10);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.14); --radius: 14px; --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--off-white); color: var(--navy); min-height: 100vh; }
+
+  header { background: var(--navy); position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.25); }
+  .tricolor-bar { display: flex; height: 4px; }
+  .tricolor-bar span:nth-child(1) { background: var(--saffron); flex: 1; }
+  .tricolor-bar span:nth-child(2) { background: #FFFFFF; flex: 1; }
+  .tricolor-bar span:nth-child(3) { background: var(--green); flex: 1; }
+  .header-inner { display: flex; align-items: center; justify-content: space-between; padding: 14px 32px; max-width: 1280px; margin: 0 auto; flex-wrap: wrap; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .logo-emblem { width: 44px; height: 44px; background: linear-gradient(135deg, var(--saffron) 0%, var(--gold) 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 0 0 3px rgba(255,107,43,0.3); }
+  .logo-text h1 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 900; color: var(--white); line-height: 1; }
+  .logo-text p { font-size: 11px; color: var(--gray-400); letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+  .nav-tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+  .nav-tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--gray-400); transition: all 0.2s; }
+  .nav-tab:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+  .nav-tab.active { background: var(--saffron); color: var(--white); }
+
+  /* Language selector in header */
+  .header-lang { display: flex; align-items: center; gap: 8px; }
+  .header-lang select { padding: 7px 12px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.08); color: var(--white); font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; outline: none; transition: all 0.2s; }
+  .header-lang select:hover, .header-lang select:focus { border-color: var(--saffron); background: rgba(255,255,255,0.12); }
+  .header-lang select option { background: var(--navy); color: var(--white); }
+
+  .hero { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 60%, #0D2140 100%); padding: 56px 32px 72px; text-align: center; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(255,107,43,0.12) 0%, transparent 60%), radial-gradient(ellipse at 80% 50%, rgba(19,136,8,0.10) 0%, transparent 60%); }
+  .hero-inner { position: relative; max-width: 760px; margin: 0 auto; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12); padding: 6px 16px; border-radius: 100px; font-size: 12px; color: var(--gold-light); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 20px; }
+  .hero h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 5vw, 50px); font-weight: 900; color: var(--white); line-height: 1.15; margin-bottom: 16px; }
+  .hero h2 em { font-style: normal; background: linear-gradient(90deg, var(--saffron-light), var(--gold-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .hero p { color: rgba(255,255,255,0.65); font-size: 16px; line-height: 1.7; max-width: 560px; margin: 0 auto 36px; }
+  .hero-stats { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .hero-stat .num { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; color: var(--gold-light); }
+  .hero-stat .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 40px 32px 80px; }
+  .panel { display: none; animation: fadeUp 0.4s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .search-box { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-md); padding: 28px; margin-bottom: 24px; border: 1px solid var(--gray-200); }
+  .search-label { font-size: 13px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .search-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .search-input { flex: 1; min-width: 200px; padding: 14px 18px; border: 2px solid var(--gray-200); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--navy); background: var(--gray-100); transition: border-color 0.2s; outline: none; }
+  .search-input:focus { border-color: var(--saffron); background: var(--white); }
+  .search-input::placeholder { color: var(--gray-400); }
+  .btn { padding: 14px 24px; border: none; border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px; }
+  .btn-primary { background: linear-gradient(135deg, var(--saffron) 0%, #E55A20 100%); color: var(--white); box-shadow: 0 4px 12px rgba(255,107,43,0.3); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,107,43,0.4); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-green { background: linear-gradient(135deg, var(--green) 0%, #0e6e07 100%); color: var(--white); box-shadow: 0 4px 12px rgba(19,136,8,0.3); }
+  .btn-green:hover { transform: translateY(-1px); }
+  .btn-green:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-outline { background: transparent; border: 2px solid var(--gray-200); color: var(--gray-600); }
+  .btn-outline:hover { border-color: var(--saffron); color: var(--saffron); }
+  .quick-chips { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--gray-200); background: var(--white); color: var(--gray-600); transition: all 0.2s; }
+  .chip:hover { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-pale); }
+
+  .result-area { margin-top: 20px; }
+  .result-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-md); overflow: hidden; border: 1px solid var(--gray-200); }
+  .result-card-header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%); padding: 20px 28px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .result-card-header h3 { color: var(--white); font-size: 16px; font-weight: 600; }
+  .badge-cat { background: rgba(255,255,255,0.12); border-radius: 100px; padding: 4px 12px; font-size: 11px; color: var(--gold-light); text-transform: uppercase; letter-spacing: 0.5px; }
+  .result-card-body { padding: 28px; }
+  .result-card-body p { font-size: 15px; line-height: 1.75; color: var(--gray-800); }
+  .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 16px; }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--gray-200); border-top-color: var(--saffron); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-state p { color: var(--gray-600); font-size: 14px; }
+
+  .eligibility-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .form-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow-md); border: 1px solid var(--gray-200); overflow: hidden; }
+  .form-card-header { padding: 18px 24px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 10px; }
+  .form-card-header h3 { font-size: 15px; font-weight: 600; color: var(--navy); }
+  .form-card-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .form-card-icon.saffron { background: var(--saffron-pale); }
+  .form-card-icon.green { background: var(--green-pale); }
+  .form-card-body { padding: 24px; }
+  .form-group { margin-bottom: 16px; }
+  .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .form-control { width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--navy); background: var(--gray-100); transition: border-color 0.2s; outline: none; }
+  .form-control:focus { border-color: var(--saffron); background: var(--white); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filter-chip { padding: 7px 16px; border-radius: 100px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1.5px solid var(--gray-200); background: var(--white); color: var(--gray-600); transition: all 0.2s; }
+  .filter-chip.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+  .filter-chip:hover:not(.active) { border-color: var(--navy); color: var(--navy); }
+
+  .scheme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 18px; }
+  .scheme-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow-sm); overflow: hidden; transition: all 0.25s; cursor: pointer; }
+  .scheme-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--saffron); }
+  .scheme-card-top { height: 5px; }
+  .scheme-card-top.education { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+  .scheme-card-top.health { background: linear-gradient(90deg, var(--green), var(--green-light)); }
+  .scheme-card-top.employment { background: linear-gradient(90deg, var(--saffron), var(--gold)); }
+  .scheme-card-top.women { background: linear-gradient(90deg, #EC4899, #F472B6); }
+  .scheme-card-top.farmer { background: linear-gradient(90deg, #78350F, #B45309); }
+  .scheme-card-top.housing { background: linear-gradient(90deg, #7C3AED, #A78BFA); }
+  .scheme-card-top.social  { background: linear-gradient(90deg, #0EA5E9, #38BDF8); }
+  .scheme-card-content { padding: 18px; }
+  .scheme-cat-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; }
+  .scheme-cat-badge.education { background: #EFF6FF; color: #2563EB; }
+  .scheme-cat-badge.health { background: var(--green-pale); color: var(--green); }
+  .scheme-cat-badge.employment { background: var(--saffron-pale); color: var(--saffron); }
+  .scheme-cat-badge.women { background: #FDF2F8; color: #DB2777; }
+  .scheme-cat-badge.farmer { background: #FEF3C7; color: #92400E; }
+  .scheme-cat-badge.housing { background: #F5F3FF; color: #6D28D9; }
+  .scheme-cat-badge.social  { background: #E0F2FE; color: #0369A1; }
+  .scheme-card-content h4 { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 8px; line-height: 1.3; }
+  .scheme-card-content p { font-size: 13px; color: var(--gray-600); line-height: 1.6; margin-bottom: 14px; }
+  .scheme-card-footer { display: flex; align-items: center; justify-content: space-between; }
+  .scheme-tag { font-size: 11px; color: var(--gray-400); }
+  .scheme-detail-btn { font-size: 12px; font-weight: 600; color: var(--saffron); background: var(--saffron-pale); border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+  .scheme-detail-btn:hover { background: var(--saffron); color: var(--white); }
+
+  .chat-window { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow-md); display: flex; flex-direction: column; height: 540px; }
+  .chat-header { padding: 16px 20px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 10px; }
+  .chat-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, var(--saffron), var(--gold)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .chat-header-info h3 { font-size: 14px; font-weight: 600; color: var(--navy); }
+  .chat-header-info p { font-size: 11px; color: var(--green); }
+  .chat-messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
+  .msg { display: flex; gap: 10px; max-width: 82%; animation: msgIn 0.3s ease; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { flex-direction: row-reverse; margin-left: auto; }
+  .msg-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .msg-avatar.bot { background: linear-gradient(135deg, var(--saffron), var(--gold)); }
+  .msg-avatar.user { background: var(--navy-soft); color: var(--white); font-size: 12px; }
+  .msg-bubble { padding: 11px 15px; border-radius: 14px; font-size: 14px; line-height: 1.6; }
+  .msg.bot .msg-bubble { background: var(--gray-100); color: var(--gray-800); border-bottom-left-radius: 4px; }
+  .msg.user .msg-bubble { background: var(--navy); color: var(--white); border-bottom-right-radius: 4px; }
+  .chat-input-row { padding: 14px 16px; border-top: 1px solid var(--gray-100); display: flex; gap: 10px; }
+  .chat-input { flex: 1; padding: 10px 14px; border: 1.5px solid var(--gray-200); border-radius: 100px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--navy); outline: none; transition: border-color 0.2s; }
+  .chat-input:focus { border-color: var(--saffron); }
+  .chat-send-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--saffron); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.2s; color: white; }
+  .chat-send-btn:hover { background: var(--saffron-light); transform: scale(1.05); }
+  .chat-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 999; display: flex; align-items: center; justify-content: center; padding: 20px; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal { background: var(--white); border-radius: var(--radius); max-width: 680px; width: 100%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%); padding: 24px 28px; }
+  .modal-header h2 { color: var(--white); font-family: 'Playfair Display', serif; font-size: 20px; padding-right: 36px; }
+  .modal-header p { color: rgba(255,255,255,0.55); font-size: 13px; margin-top: 4px; }
+  .modal-body { padding: 28px; }
+  .modal-close { float: right; background: rgba(255,255,255,0.1); border: none; color: var(--white); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 16px; display: inline-flex; align-items: center; justify-content: center; transition: background 0.2s; }
+  .modal-close:hover { background: rgba(255,255,255,0.2); }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+  .info-box { background: var(--gray-100); border-radius: var(--radius-sm); padding: 14px; }
+  .info-box .info-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--gray-400); margin-bottom: 4px; }
+  .info-box .info-val { font-size: 14px; font-weight: 600; color: var(--navy); }
+
+  .section-title { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .section-sub { font-size: 14px; color: var(--gray-600); margin-bottom: 24px; }
+
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--navy); color: var(--white); padding: 12px 20px; border-radius: var(--radius-sm); font-size: 14px; box-shadow: var(--shadow-lg); z-index: 9999; animation: slideInRight 0.3s ease; }
+  @keyframes slideInRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  .typing-cursor::after { content: '▋'; animation: blink 0.6s step-end infinite; color: var(--saffron); }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .free-badge { background: linear-gradient(135deg, #138808, #0e6e07); color: white; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+  /* ── VOICE & VIDEO BUTTONS ── */
+  .btn-voice { background: linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%); color: var(--white); box-shadow: 0 4px 12px rgba(124,58,237,0.3); }
+  .btn-voice:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(124,58,237,0.4); }
+  .btn-voice.speaking { background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%); box-shadow: 0 4px 12px rgba(220,38,38,0.3); animation: pulse-red 1.2s ease-in-out infinite; }
+  @keyframes pulse-red { 0%,100%{box-shadow:0 4px 12px rgba(220,38,38,0.3);} 50%{box-shadow:0 4px 22px rgba(220,38,38,0.6);} }
+  .btn-video { background: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%); color: var(--white); box-shadow: 0 4px 12px rgba(220,38,38,0.3); }
+  .btn-video:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(220,38,38,0.4); }
+
+  /* ── VOICE PANEL ── */
+  .voice-panel { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow-md); padding: 28px; margin-bottom: 24px; }
+  .voice-panel h3 { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--navy); margin-bottom: 6px; }
+  .voice-panel p { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; }
+  .voice-scheme-select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--navy); background: var(--gray-100); outline: none; margin-bottom: 16px; }
+  .voice-scheme-select:focus { border-color: #7C3AED; }
+  .voice-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .voice-rate-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .voice-rate-row label { font-size: 12px; font-weight: 600; color: var(--gray-600); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+  .voice-rate-row input[type=range] { flex:1; accent-color: #7C3AED; }
+  .voice-text-preview { background: var(--gray-100); border-radius: var(--radius-sm); padding: 16px; font-size: 13px; line-height: 1.7; color: var(--gray-800); max-height: 180px; overflow-y: auto; white-space: pre-line; border-left: 3px solid #7C3AED; }
+  .voice-wave { display: flex; align-items: center; gap: 3px; height: 28px; margin-left: 10px; }
+  .voice-wave span { display: inline-block; width: 4px; background: #7C3AED; border-radius: 2px; animation: wave 1s ease-in-out infinite; }
+  .voice-wave span:nth-child(1){height:8px;animation-delay:0s;}
+  .voice-wave span:nth-child(2){height:16px;animation-delay:.1s;}
+  .voice-wave span:nth-child(3){height:24px;animation-delay:.2s;}
+  .voice-wave span:nth-child(4){height:16px;animation-delay:.3s;}
+  .voice-wave span:nth-child(5){height:8px;animation-delay:.4s;}
+  @keyframes wave { 0%,100%{transform:scaleY(0.4);} 50%{transform:scaleY(1);} }
+  .voice-wave.hidden { display: none; }
+
+  /* ── VIDEO PANEL ── */
+  .video-panel { background: var(--white); border-radius: var(--radius); border: 1px solid var(--gray-200); box-shadow: var(--shadow-md); padding: 28px; margin-bottom: 24px; }
+  .video-panel h3 { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--navy); margin-bottom: 6px; }
+  .video-panel p { font-size: 13px; color: var(--gray-600); margin-bottom: 20px; }
+  .video-scheme-select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--gray-200); border-radius: var(--radius-sm); font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--navy); background: var(--gray-100); outline: none; margin-bottom: 16px; }
+  .video-scheme-select:focus { border-color: #DC2626; }
+  .video-frame-wrap { border-radius: var(--radius); overflow: hidden; background: #000; aspect-ratio: 16/9; margin-bottom: 16px; }
+  .video-frame-wrap iframe { width: 100%; height: 100%; border: none; display: block; }
+  .video-placeholder { width:100%; aspect-ratio:16/9; background:linear-gradient(135deg,var(--navy),var(--navy-mid)); display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;border-radius:var(--radius); }
+  .video-placeholder .play-icon { width:60px;height:60px;background:rgba(220,38,38,0.8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;cursor:pointer;transition:all .2s; }
+  .video-placeholder .play-icon:hover { background:rgba(220,38,38,1);transform:scale(1.05); }
+  .video-placeholder p { color:rgba(255,255,255,0.6);font-size:13px; }
+  .video-links { display:flex;gap:10px;flex-wrap:wrap; }
+  .video-link-chip { padding:7px 14px;border-radius:100px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid #DC2626;background:#FEF2F2;color:#DC2626;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px; }
+  .video-link-chip:hover { background:#DC2626;color:white; }
+
+  @media (max-width: 768px) {
+    .eligibility-grid { grid-template-columns: 1fr; }
+    .hero-stats { gap: 20px; }
+    .header-inner { padding: 12px 16px; }
+    .container { padding: 24px 16px 60px; }
+    .form-row { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tricolor-bar"><span></span><span></span><span></span></div>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-emblem">🪷</div>
+      <div class="logo-text">
+        <h1>SchemeSaathi</h1>
+        <p id="hdr-subtitle">AI-Powered Scheme Simplifier</p>
+      </div>
+    </div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tab-search" onclick="switchPanel('search',this)">🔍 <span data-t="nav_search">Search</span></button>
+      <button class="nav-tab" id="tab-eligibility" onclick="switchPanel('eligibility',this)">✅ <span data-t="nav_eligibility">Eligibility</span></button>
+      <button class="nav-tab" id="tab-browse" onclick="switchPanel('browse',this)">📋 <span data-t="nav_browse">Browse</span></button>
+      <button class="nav-tab" id="tab-chat" onclick="switchPanel('chat',this)">💬 <span data-t="nav_chat">Ask AI</span></button>
+      <button class="nav-tab" id="tab-voice" onclick="switchPanel('voice',this)">🎙️ Voice Guide</button>
+      <button class="nav-tab" id="tab-video" onclick="switchPanel('video',this)">🎬 Scheme Video</button>
+      <button class="nav-tab" id="tab-office" onclick="switchPanel('office',this)">🗺️ <span data-t="nav_office">Office Locator</span></button>
+    </div>
+    <div class="header-lang">
+      <button class="btn btn-outline" id="accountBtn" onclick="onAccountClick()" style="padding:8px 14px;font-size:13px;white-space:nowrap;">👤 <span id="accountBtnLabel" data-t="login">Login</span></button>
+      <select id="globalLang" onchange="changeLanguage(this.value)">
+        <option value="English">🇬🇧 English</option>
+        <option value="Hindi">🇮🇳 हिंदी</option>
+        <option value="Tamil">🇮🇳 தமிழ்</option>
+        <option value="Telugu">🇮🇳 తెలుగు</option>
+        <option value="Kannada">🇮🇳 ಕನ್ನಡ</option>
+        <option value="Bengali">🇮🇳 বাংলা</option>
+        <option value="Marathi">🇮🇳 मराठी</option>
+        <option value="Gujarati">🇮🇳 ગુજરાતી</option>
+        <option value="Malayalam">🇮🇳 മലയാളം</option>
+        <option value="Punjabi">🇮🇳 ਪੰਜਾਬੀ</option>
+        <option value="Odia">🇮🇳 ଓଡ଼ିଆ</option>
+        <option value="Urdu">🇵🇰 اردو</option>
+      </select>
+      <span class="free-badge">FREE</span>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">🇮🇳 &nbsp;<span data-t="hero_badge">AI-Powered · Built for Every Indian Citizen</span></div>
+    <h2 data-t="hero_title">Your Guide to Every<br/><em>Government Welfare Scheme</em></h2>
+    <p data-t="hero_desc">Understand complex government schemes in plain language. Check eligibility, get personalized recommendations, and chat with our AI assistant — all in one place.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="num">30+</div><div class="lbl" data-t="stat_schemes">Schemes Covered</div></div>
+      <div class="hero-stat"><div class="num">12+</div><div class="lbl" data-t="stat_langs">Languages</div></div>
+      <div class="hero-stat"><div class="num">8</div><div class="lbl" data-t="stat_cats">Categories</div></div>
+      <div class="hero-stat"><div class="num">FREE</div><div class="lbl" data-t="stat_free">No API Key Needed</div></div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+
+  <!-- SEARCH PANEL -->
+  <div class="panel active" id="panel-search">
+    <h2 class="section-title" data-t="search_title">Search Schemes</h2>
+    <p class="section-sub" data-t="search_sub">Describe what you're looking for — our AI will find and explain relevant schemes for you.</p>
+    <div class="search-box">
+      <div class="search-label" data-t="search_label">What kind of scheme are you looking for?</div>
+      <div class="search-row">
+        <input class="search-input" id="searchQuery" data-ph="search_placeholder" placeholder="e.g. scholarship for SC students, free ration for BPL families..." />
+        <button class="btn btn-primary" id="searchBtn" onclick="searchSchemes()">🔍 <span data-t="btn_search">Search</span></button>
+      </div>
+      <div class="quick-chips" id="quickChips">
+        <span class="chip" onclick="quickSearch('PM Kisan Yojana')">🌾 PM Kisan</span>
+        <span class="chip" onclick="quickSearch('Ayushman Bharat health insurance')">🏥 Ayushman Bharat</span>
+        <span class="chip" onclick="quickSearch('scholarship for girls education')">📚 <span data-t="chip_scholar">Girl Scholarship</span></span>
+        <span class="chip" onclick="quickSearch('free housing for poor PMAY')">🏠 PM Awas Yojana</span>
+        <span class="chip" onclick="quickSearch('employment rural MGNREGA')">💼 MGNREGA</span>
+        <span class="chip" onclick="quickSearch('maternity benefit women')">👩 <span data-t="chip_maternity">Maternity Benefit</span></span>
+      </div>
+    </div>
+    <div class="result-area" id="searchResult"></div>
+  </div>
+
+  <!-- ELIGIBILITY PANEL -->
+  <div class="panel" id="panel-eligibility">
+    <h2 class="section-title" data-t="elig_title">Check Your Eligibility</h2>
+    <p class="section-sub" data-t="elig_sub">Enter your details and our AI will recommend schemes you qualify for.</p>
+    <div class="eligibility-grid">
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon saffron">👤</div>
+          <h3 data-t="personal_details">Personal Details</h3>
+        </div>
+        <div class="form-card-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label data-t="lbl_age">Age</label>
+              <input class="form-control" type="number" id="elig_age" placeholder="e.g. 35" min="1" max="120"
+                oninput="this.value=this.value.replace(/[^0-9]/g,''); if(parseInt(this.value)>120)this.value=120; if(parseInt(this.value)<0)this.value='';" />
+            </div>
+            <div class="form-group">
+              <label data-t="lbl_gender">Gender</label>
+              <select class="form-control" id="elig_gender">
+                <option value="" data-t="opt_select">Select</option>
+                <option data-t="opt_male">Male</option>
+                <option data-t="opt_female">Female</option>
+                <option data-t="opt_trans">Transgender</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label data-t="lbl_category">Category</label>
+            <select class="form-control" id="elig_category">
+              <option value="" data-t="opt_select_cat">Select Category</option>
+              <option>General</option><option>OBC</option><option>SC</option><option>ST</option><option>EWS</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-t="lbl_income">Annual Family Income (₹)</label>
+            <select class="form-control" id="elig_income">
+              <option value="" data-t="opt_select_range">Select Range</option>
+              <option value="below 50000">Below ₹50,000</option>
+              <option value="50000 to 1 lakh">₹50,000 – ₹1 Lakh</option>
+              <option value="1 to 2.5 lakh">₹1 – ₹2.5 Lakh</option>
+              <option value="2.5 to 5 lakh">₹2.5 – ₹5 Lakh</option>
+              <option value="above 5 lakh">Above ₹5 Lakh</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-t="lbl_occupation">Occupation</label>
+            <select class="form-control" id="elig_occupation">
+              <option value="" data-t="opt_select">Select</option>
+              <option data-t="occ_farmer">Farmer</option>
+              <option data-t="occ_daily">Daily Wage Worker</option>
+              <option data-t="occ_student">Student</option>
+              <option data-t="occ_unemp">Unemployed</option>
+              <option data-t="occ_self">Self-employed</option>
+              <option data-t="occ_salaried">Salaried</option>
+              <option data-t="occ_senior">Senior Citizen</option>
+              <option data-t="occ_disabled">Differently Abled</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="form-card">
+        <div class="form-card-header">
+          <div class="form-card-icon green">🏡</div>
+          <h3 data-t="residence_family">Residence &amp; Family</h3>
+        </div>
+        <div class="form-card-body">
+          <div class="form-group">
+            <label data-t="lbl_state">State</label>
+            <select class="form-control" id="elig_state">
+              <option value="" data-t="opt_select_state">Select State</option>
+              <option>Andhra Pradesh</option><option>Assam</option><option>Bihar</option>
+              <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+              <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option>
+              <option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+              <option>Meghalaya</option><option>Odisha</option><option>Punjab</option>
+              <option>Rajasthan</option><option>Tamil Nadu</option><option>Telangana</option>
+              <option>Uttar Pradesh</option><option>Uttarakhand</option><option>West Bengal</option>
+              <option>Delhi</option><option>Goa</option><option>Chhattisgarh</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-t="lbl_residence">Residence Type</label>
+            <select class="form-control" id="elig_residence">
+              <option value="" data-t="opt_select">Select</option>
+              <option data-t="res_rural">Rural</option>
+              <option data-t="res_urban">Urban</option>
+              <option data-t="res_semi">Semi-Urban</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-t="lbl_marital">Marital Status</label>
+            <select class="form-control" id="elig_marital">
+              <option value="" data-t="opt_select">Select</option>
+              <option data-t="mar_single">Single</option>
+              <option data-t="mar_married">Married</option>
+              <option data-t="mar_widow">Widowed</option>
+              <option data-t="mar_divorced">Divorced</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label data-t="lbl_education">Education Level</label>
+            <select class="form-control" id="elig_education">
+              <option value="" data-t="opt_select">Select</option>
+              <option data-t="edu_none">No Formal Education</option>
+              <option data-t="edu_primary">Primary (1–5)</option>
+              <option data-t="edu_secondary">Secondary (6–10)</option>
+              <option data-t="edu_higher">Higher Secondary (11–12)</option>
+              <option data-t="edu_grad">Graduate</option>
+              <option data-t="edu_postgrad">Post Graduate</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px;text-transform:none;font-size:13px;font-weight:500;">
+              <input type="checkbox" id="elig_bpl" style="width:16px;height:16px;cursor:pointer;"/>
+              <span data-t="lbl_bpl">BPL (Below Poverty Line) card holder</span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+      <button class="btn btn-green" id="eligBtn" onclick="checkEligibility()">✅ <span data-t="btn_check_elig">Check My Eligibility</span></button>
+      <button class="btn btn-outline" onclick="clearEligibility()">↺ <span data-t="btn_clear">Clear Form</span></button>
+    </div>
+    <div class="result-area" id="eligResult" style="margin-top:24px;"></div>
+  </div>
+
+  <!-- BROWSE PANEL -->
+  <div class="panel" id="panel-browse">
+    <h2 class="section-title" data-t="browse_title">Browse All Schemes</h2>
+    <p class="section-sub" data-t="browse_sub">Explore government schemes by category. Click any card to get an AI-powered simplified explanation.</p>
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="filterSchemes('all',this)" data-t="filter_all">All Schemes</button>
+      <button class="filter-chip" onclick="filterSchemes('education',this)">📚 <span data-t="filter_edu">Education</span></button>
+      <button class="filter-chip" onclick="filterSchemes('health',this)">🏥 <span data-t="filter_health">Health</span></button>
+      <button class="filter-chip" onclick="filterSchemes('employment',this)">💼 <span data-t="filter_emp">Employment</span></button>
+      <button class="filter-chip" onclick="filterSchemes('women',this)">👩 <span data-t="filter_women">Women</span></button>
+      <button class="filter-chip" onclick="filterSchemes('farmer',this)">🌾 <span data-t="filter_farmer">Farmers</span></button>
+      <button class="filter-chip" onclick="filterSchemes('housing',this)">🏠 <span data-t="filter_housing">Housing</span></button>
+      <button class="filter-chip" onclick="filterSchemes('social',this)">🛡️ Social</button>
+    </div>
+    <div class="scheme-grid" id="schemeGrid"></div>
+  </div>
+
+  <!-- CHAT PANEL -->
+  <div class="panel" id="panel-chat">
+    <h2 class="section-title" data-t="chat_title">Ask SchemeSaathi AI</h2>
+    <p class="section-sub" data-t="chat_sub">Chat with our AI assistant about any government scheme, eligibility query, or application process.</p>
+    <div class="chat-window">
+      <div class="chat-header">
+        <div class="chat-avatar">🪷</div>
+        <div class="chat-header-info">
+          <h3>SchemeSaathi Assistant</h3>
+          <p data-t="chat_online">● Online · AI Powered · Free</p>
+        </div>
+      </div>
+      <div class="chat-messages" id="chatMessages">
+        <div class="msg bot">
+          <div class="msg-avatar bot">🪷</div>
+          <div class="msg-bubble" id="welcomeMsg">Namaste! 🙏 I'm SchemeSaathi, your free AI guide to government welfare schemes. Ask me about any scheme — who can apply, what benefits it gives, how to apply, or what documents you need. How can I help you today?</div>
+        </div>
+      </div>
+      <div class="chat-input-row">
+        <input class="chat-input" id="chatInput" data-ph="chat_placeholder" placeholder="Ask about any government scheme..." onkeypress="if(event.key==='Enter')sendChat()"/>
+        <button class="chat-send-btn" id="chatSendBtn" onclick="sendChat()">➤</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- VOICE GUIDE PANEL                      -->
+<!-- ══════════════════════════════════════ -->
+<div class="container">
+  <div class="panel" id="panel-voice">
+    <h2 class="section-title">🎙️ AI Voice Guide</h2>
+    <p class="section-sub">Select any government scheme and listen to a clear, spoken explanation in your preferred voice and speed.</p>
+
+    <div class="voice-panel">
+      <h3>🔊 Text-to-Speech Scheme Reader</h3>
+      <p>Choose a scheme below — the full explanation will be read aloud using your device's built-in speech engine. No internet or API needed.</p>
+
+      <label style="font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Select Scheme</label>
+      <select class="voice-scheme-select" id="voiceSchemeSelect" onchange="updateVoicePreview()">
+        <option value="">-- Choose a scheme --</option>
+        <option value="pm_kisan">Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)</option>
+        <option value="ayushman">PM Jan Arogya Yojana (Ayushman Bharat)</option>
+        <option value="pmay">Pradhan Mantri Awas Yojana (PMAY)</option>
+        <option value="mgnrega">Mahatma Gandhi NREGA</option>
+        <option value="mudra">Pradhan Mantri MUDRA Yojana</option>
+        <option value="beti">Beti Bachao Beti Padhao</option>
+        <option value="sukanya">Sukanya Samriddhi Yojana</option>
+        <option value="kcc">Kisan Credit Card Scheme</option>
+        <option value="ujjwala">Pradhan Mantri Ujjwala Yojana</option>
+        <option value="standup">Stand Up India Scheme</option>
+        <option value="atal_pension">Atal Pension Yojana</option>
+        <option value="svnidhi">PM Street Vendor AtmaNirbhar Nidhi</option>
+      </select>
+
+      <div class="voice-rate-row">
+        <label>🗣️ Voice Speed</label>
+        <input type="range" id="voiceRate" min="0.5" max="1.8" step="0.1" value="1" oninput="document.getElementById('rateVal').textContent=this.value+'x'"/>
+        <span id="rateVal" style="font-size:13px;font-weight:600;color:#7C3AED;min-width:36px;">1x</span>
+      </div>
+
+      <div class="voice-rate-row">
+        <label>🎵 Voice Pitch</label>
+        <input type="range" id="voicePitch" min="0.5" max="2" step="0.1" value="1" oninput="document.getElementById('pitchVal').textContent=this.value"/>
+        <span id="pitchVal" style="font-size:13px;font-weight:600;color:#7C3AED;min-width:36px;">1</span>
+      </div>
+
+      <label style="font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Select Voice Language</label>
+      <select class="voice-scheme-select" id="voiceLangSelect" style="margin-bottom:16px;">
+        <option value="en-IN">English (India)</option>
+        <option value="en-US">English (US)</option>
+        <option value="hi-IN">हिंदी Hindi</option>
+        <option value="ta-IN">தமிழ் Tamil</option>
+        <option value="te-IN">తెలుగు Telugu</option>
+        <option value="kn-IN">ಕನ್ನಡ Kannada</option>
+        <option value="bn-IN">বাংলা Bengali</option>
+        <option value="mr-IN">मराठी Marathi</option>
+        <option value="gu-IN">ગુજરાતી Gujarati</option>
+        <option value="ml-IN">മലയാളം Malayalam</option>
+        <option value="pa-IN">ਪੰਜਾਬੀ Punjabi</option>
+        <option value="ur-IN">اردو Urdu</option>
+      </select>
+      <p style="font-size:11.5px;color:var(--gray-500);margin:-10px 0 16px;">Non-English voices are auto-translated, then read aloud using any matching voice installed on your device/OS. If your browser has no voice for that language, it will fall back to English audio.</p>
+
+      <div class="voice-controls">
+        <button class="btn btn-voice" id="voicePlayBtn" onclick="startVoice()">▶ Play Explanation</button>
+        <button class="btn btn-outline" onclick="stopVoice()">⏹ Stop</button>
+        <button class="btn btn-outline" onclick="pauseVoice()" id="voicePauseBtn">⏸ Pause</button>
+        <div class="voice-wave hidden" id="voiceWave">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+
+      <div style="font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">📄 Script Preview</div>
+      <div class="voice-text-preview" id="voiceTextPreview">Select a scheme above to see the explanation that will be read aloud...</div>
+    </div>
+
+    <div style="background:#F0F4FF;border:1px solid #C7D7FF;border-radius:10px;padding:16px 20px;margin-top:8px;">
+      <div style="font-size:13px;font-weight:700;color:#1D4ED8;margin-bottom:6px;">ℹ️ How Voice Guide Works</div>
+      <div style="font-size:13px;color:#374151;line-height:1.7;">
+        This feature uses your <strong>browser's built-in Text-to-Speech engine</strong> — no internet connection or API key needed.
+        The voice quality depends on voices installed on your operating system. For best results on Windows, go to
+        <em>Settings → Time & Language → Speech</em> and install additional language packs.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCHEME VIDEO PANEL                     -->
+<!-- ══════════════════════════════════════ -->
+<div class="container">
+  <div class="panel" id="panel-video">
+    <h2 class="section-title">🎬 Scheme Video Explainer</h2>
+    <p class="section-sub">Watch official and educational videos explaining government schemes — sourced from YouTube government channels.</p>
+
+    <div class="video-panel">
+      <h3>📺 Watch Scheme Explanation</h3>
+      <p>Select a scheme to watch an explanatory video from official government sources.</p>
+
+      <label style="font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;">Select Scheme</label>
+      <select class="video-scheme-select" id="videoSchemeSelect" onchange="loadSchemeVideo()">
+        <option value="">-- Choose a scheme to watch --</option>
+        <option value="pm_kisan">Pradhan Mantri Kisan Samman Nidhi (PM-KISAN)</option>
+        <option value="ayushman">Ayushman Bharat PM-JAY</option>
+        <option value="pmay">Pradhan Mantri Awas Yojana (PMAY)</option>
+        <option value="mgnrega">Mahatma Gandhi NREGA</option>
+        <option value="mudra">PM MUDRA Yojana</option>
+        <option value="beti">Beti Bachao Beti Padhao</option>
+        <option value="sukanya">Sukanya Samriddhi Yojana</option>
+        <option value="ujjwala">PM Ujjwala Yojana</option>
+        <option value="kcc">Kisan Credit Card</option>
+        <option value="standup">Stand Up India</option>
+      </select>
+
+      <div id="videoFrame">
+        <div class="video-placeholder">
+          <div class="play-icon">▶</div>
+          <p>Select a scheme above to load the video</p>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;" id="videoLinks"></div>
+    </div>
+
+    <div style="background:#FFF4EE;border:1px solid #FFD0B0;border-radius:10px;padding:16px 20px;margin-top:8px;">
+      <div style="font-size:13px;font-weight:700;color:#C05A00;margin-bottom:6px;">📌 Note about Videos</div>
+      <div style="font-size:13px;color:#374151;line-height:1.7;">
+        Videos are embedded from <strong>official YouTube channels</strong> of Government of India ministries (PIB India, MyGov India, DD News).
+        If a video does not load, it may have been moved — use the direct YouTube link buttons below the player.
+        You can also search for the scheme name on YouTube for the latest videos.
+      </div>
+    </div>
+  </div>
+
+  <!-- OFFICE LOCATOR PANEL -->
+  <div class="panel" id="panel-office">
+    <h2 class="section-title" data-t="office_title">Find Your Nearest Government Office</h2>
+    <p class="section-sub" data-t="office_sub">Drag the pin on the map to your location, or use "Use My Location" — we'll find nearby government / scheme offices around you.</p>
+
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-primary" onclick="useMyLocation()">📍 <span data-t="btn_use_location">Use My Location</span></button>
+      <button class="btn btn-outline" onclick="searchNearbyOffices()">🔎 <span data-t="btn_find_offices">Find Offices Near Pin</span></button>
+      <span id="officeStatus" style="align-self:center;font-size:13px;color:var(--gray-600);"></span>
+    </div>
+
+    <div id="officeMap" style="height:420px;border-radius:14px;overflow:hidden;border:1px solid var(--gray-200);"></div>
+    <p style="font-size:12px;color:var(--gray-500);margin-top:8px;">🖱️ <span data-t="office_drag_hint">Tip: click and drag the marker to reposition it anywhere on the map.</span></p>
+
+    <div id="officeResults" style="margin-top:20px;display:grid;gap:12px;"></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modalOverlay" style="display:none;" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      <h2 id="modalTitle">Scheme Details</h2>
+      <p id="modalSubtitle"></p>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ─── SCHEMES DATA (30 schemes) ───
+const SCHEMES = [
+  { id:1,  name:"PM-KISAN",          cat:"farmer",     full:"Pradhan Mantri Kisan Samman Nidhi",                      desc:"Direct income support of ₹6,000/year to small and marginal farmers in three equal instalments of ₹2,000 each.", eligibility:"Farmers owning cultivable land below 2 hectares", ministry:"Agriculture", benefit:"₹6,000/year direct transfer", link:"https://pmkisan.gov.in" },
+  { id:2,  name:"Ayushman Bharat",   cat:"health",     full:"PM Jan Arogya Yojana (PM-JAY)",                          desc:"Health insurance coverage of ₹5 lakh per family per year for secondary and tertiary care hospitalization across 1393+ procedures.", eligibility:"Economically weaker sections based on SECC data, BPL families", ministry:"Health & Family Welfare", benefit:"₹5 Lakh/year health cover", link:"https://pmjay.gov.in" },
+  { id:3,  name:"PM Awas Yojana",    cat:"housing",    full:"Pradhan Mantri Awas Yojana (PMAY)",                      desc:"Financial assistance for construction or enhancement of pucca houses for homeless and those living in kutcha houses. Covers rural and urban beneficiaries.", eligibility:"Households without pucca house, EWS/LIG/MIG income groups", ministry:"Housing & Urban Affairs", benefit:"Up to ₹2.67 Lakh subsidy", link:"https://pmaymis.gov.in" },
+  { id:4,  name:"MGNREGA",           cat:"employment", full:"Mahatma Gandhi National Rural Employment Guarantee Act",  desc:"Guarantees 100 days of wage employment per year to every rural household whose adult members volunteer to do unskilled manual work.", eligibility:"Adult rural residents willing to do unskilled work", ministry:"Rural Development", benefit:"100 days guaranteed employment", link:"https://nrega.nic.in" },
+  { id:5,  name:"Beti Bachao",       cat:"women",      full:"Beti Bachao Beti Padhao Scheme",                         desc:"Addresses declining child sex ratio and promotes welfare and education of the girl child through awareness programs and linked schemes.", eligibility:"Girl children, especially in districts with low child sex ratios", ministry:"Women & Child Development", benefit:"Education & welfare support for girl child", link:"" },
+  { id:6,  name:"Sukanya Samriddhi", cat:"women",      full:"Sukanya Samriddhi Yojana",                               desc:"Small savings scheme for the girl child offering 8.2% interest p.a. and full tax benefits. Account matures when girl turns 21.", eligibility:"Parents/guardians of girl child below 10 years of age", ministry:"Finance", benefit:"8.2% interest p.a. + tax benefits", link:"" },
+  { id:7,  name:"SC/ST Scholarship", cat:"education",  full:"Post Matric Scholarship for SC/ST Students",             desc:"Financial assistance to SC/ST students studying at post-matric level to enable them to complete their education without financial burden.", eligibility:"SC/ST students studying post-matric, family income below ₹2.5 Lakh p.a.", ministry:"Social Justice & Empowerment", benefit:"Full tuition fee + maintenance allowance", link:"https://scholarships.gov.in" },
+  { id:8,  name:"PM Fasal Bima",     cat:"farmer",     full:"Pradhan Mantri Fasal Bima Yojana",                       desc:"Comprehensive crop insurance against non-preventable natural risks from pre-sowing to post-harvest at very low premium (2% Kharif, 1.5% Rabi).", eligibility:"All farmers growing notified crops in notified areas", ministry:"Agriculture & Farmers Welfare", benefit:"Crop loss compensation at sum insured", link:"" },
+  { id:9,  name:"Ujjwala Yojana",    cat:"women",      full:"Pradhan Mantri Ujjwala Yojana",                          desc:"Provides free LPG connections to women from BPL households to replace unhealthy cooking fuel like wood and coal with clean LPG gas.", eligibility:"Women aged 18+ from BPL families without a prior LPG connection", ministry:"Petroleum & Natural Gas", benefit:"Free LPG connection + first cylinder", link:"https://pmuy.gov.in" },
+  { id:10, name:"Stand Up India",    cat:"employment", full:"Stand Up India Scheme",                                   desc:"Facilitates bank loans between ₹10 Lakh and ₹1 Crore to SC/ST borrowers and women entrepreneurs for greenfield enterprises.", eligibility:"SC/ST or Women entrepreneurs starting a new business for first time", ministry:"Finance", benefit:"Loans ₹10L–₹1Cr at low interest", link:"https://standupmitra.in" },
+  { id:11, name:"Mudra Yojana",      cat:"employment", full:"Pradhan Mantri MUDRA Yojana",                            desc:"Provides micro-finance loans up to ₹10 Lakh to non-corporate, non-farm micro and small enterprises without collateral. Three tiers: Shishu, Kishor, Tarun.", eligibility:"Small business owners, street vendors, artisans, entrepreneurs", ministry:"Finance", benefit:"Loans up to ₹10 Lakh, no collateral", link:"https://mudra.org.in" },
+  { id:12, name:"NSP Scholarships",  cat:"education",  full:"National Scholarship Portal Schemes",                    desc:"Unified platform hosting central and state government scholarships for students from pre-matric to post-doctoral level.", eligibility:"Students across all levels based on category and income", ministry:"Education", benefit:"Various stipends and tuition support", link:"https://scholarships.gov.in" },
+  { id:13, name:"Atal Pension",      cat:"employment", full:"Atal Pension Yojana",                                     desc:"Guaranteed monthly pension of ₹1,000 to ₹5,000 after age 60 for unorganized sector workers, with government co-contribution.", eligibility:"Indian citizens aged 18–40 with a savings bank account", ministry:"Finance", benefit:"₹1,000–₹5,000/month guaranteed pension", link:"" },
+  { id:14, name:"PM SVANidhi",       cat:"employment", full:"PM Street Vendor's AtmaNirbhar Nidhi",                   desc:"Provides affordable working capital loans to street vendors to resume their livelihoods. Digital transaction cashback of 1% monthly.", eligibility:"Street vendors operating in urban areas with vending certificate", ministry:"Housing & Urban Affairs", benefit:"Collateral-free loans up to ₹50,000", link:"https://pmsvanidhi.mohua.gov.in" },
+  { id:15, name:"Kisan Credit Card", cat:"farmer",     full:"Kisan Credit Card Scheme",                               desc:"Provides short-term credit to farmers for cultivation, allied activities, and non-farm needs at just 4% interest per annum.", eligibility:"Farmers, tenant farmers, sharecroppers, and SHG members", ministry:"Agriculture", benefit:"Short-term credit at 4% interest p.a.", link:"" },
+  { id:16, name:"PM Poshan",         cat:"education",  full:"PM Poshan Shakti Nirman (Mid-Day Meal)",                 desc:"Provides free hot cooked meals to children in government and aided schools (Class 1–8) to improve nutrition and boost attendance.", eligibility:"Students in government and aided schools, Class 1 to Class 8", ministry:"Education", benefit:"Free nutritious mid-day meal daily", link:"" },
+  { id:17, name:"Jan Dhan Yojana",   cat:"employment", full:"Pradhan Mantri Jan Dhan Yojana",                         desc:"Financial inclusion scheme providing zero-balance bank accounts with RuPay debit card, ₹2 lakh accident insurance, and ₹30,000 life insurance.", eligibility:"Any Indian citizen without a bank account", ministry:"Finance", benefit:"Zero-balance account + ₹2L accident cover", link:"https://pmjdy.gov.in" },
+  { id:18, name:"Kaushal Vikas",     cat:"employment", full:"Pradhan Mantri Kaushal Vikas Yojana (PMKVY)",            desc:"Free skill training scheme for Indian youth across 300+ job roles in sectors like construction, electronics, retail, beauty, and plumbing.", eligibility:"Indian youth aged 15–45 seeking skill certification", ministry:"Skill Development", benefit:"Free training + ₹8,000 cash reward on certification", link:"https://pmkvyofficial.org" },
+  { id:19, name:"Old Age Pension",   cat:"social",     full:"National Social Assistance Programme – Old Age Pension", desc:"Monthly pension support for destitute elderly persons aged 60 and above from BPL households. Central contribution of ₹200–₹500/month.", eligibility:"BPL citizens aged 60+; 80+ receive higher pension", ministry:"Rural Development", benefit:"₹200–₹500/month pension + state top-up", link:"" },
+  { id:20, name:"Widow Pension",     cat:"social",     full:"Indira Gandhi National Widow Pension Scheme",            desc:"Monthly pension for widows aged 40–79 from BPL households. Central government contributes ₹300/month; states add on top.", eligibility:"Widows aged 40–79 from BPL families", ministry:"Rural Development", benefit:"₹300/month + state contribution", link:"" },
+  { id:21, name:"Disability Pension",cat:"social",     full:"Indira Gandhi National Disability Pension Scheme",       desc:"Monthly pension for persons with severe/multiple disabilities (80%+ disability) aged 18+ from BPL families.", eligibility:"BPL persons with 80%+ disability aged 18+", ministry:"Rural Development", benefit:"₹300/month disability pension", link:"" },
+  { id:22, name:"PM Matru Vandana", cat:"women",       full:"Pradhan Mantri Matru Vandana Yojana (PMMVY)",            desc:"Maternity benefit of ₹6,500 for the first live birth to working women to provide wage compensation during pregnancy and lactation.", eligibility:"Pregnant and lactating women 19+ for first live birth (except government employees)", ministry:"Women & Child Development", benefit:"₹6,500 maternity cash benefit", link:"" },
+  { id:23, name:"Jal Jeevan Mission",cat:"housing",    full:"Jal Jeevan Mission – Har Ghar Jal",                     desc:"Provides functional household tap water connections to every rural household by 2024. Aims to provide 55 litres per capita per day.", eligibility:"All rural households without piped water supply", ministry:"Jal Shakti", benefit:"Tap water connection to every rural home", link:"https://jaljeevanmission.gov.in" },
+  { id:24, name:"Free Ration",       cat:"social",     full:"Pradhan Mantri Garib Kalyan Anna Yojana",               desc:"Free foodgrains (5 kg wheat/rice per person per month) to over 80 crore beneficiaries under the National Food Security Act.", eligibility:"NFSA beneficiaries with ration card (Antyodaya/Priority households)", ministry:"Food & Public Distribution", benefit:"5 kg free grains/person/month", link:"https://nfsa.gov.in" },
+  { id:25, name:"Startup India",     cat:"employment", full:"Startup India Scheme",                                   desc:"Supports startups with tax exemption for 3 years, self-certification under 6 labour and 3 environment laws, IPR fast track, and government procurement preference.", eligibility:"DPIIT-recognized startups up to 10 years old with turnover below ₹100 crore", ministry:"Commerce & Industry", benefit:"Tax exemption + fast-track patent + funding", link:"https://startupindia.gov.in" },
+  { id:26, name:"PM E-Bus Sewa",    cat:"employment",  full:"PM eBus Sewa",                                           desc:"Augments city bus services by deploying electric buses through PPP model. Creates green urban transport and driver employment.", eligibility:"Residents of 169 selected cities", ministry:"Housing & Urban Affairs", benefit:"Clean public e-bus transport in cities", link:"" },
+  { id:27, name:"Antyodaya Anna",   cat:"social",      full:"Antyodaya Anna Yojana",                                  desc:"Provides 35 kg of food grains per month at highly subsidized rates (₹2/kg wheat, ₹3/kg rice) to the poorest of the poor families.", eligibility:"Poorest BPL families (landless, daily wage earners, elderly/disabled living alone)", ministry:"Food & Public Distribution", benefit:"35 kg grains/month at ₹2–₹3/kg", link:"" },
+  { id:28, name:"OBC Scholarship",  cat:"education",   full:"Post Matric Scholarship for OBC Students",              desc:"Financial assistance for Other Backward Classes students studying at post-matric level to encourage continuation of higher education.", eligibility:"OBC students with family income below ₹1 lakh p.a.", ministry:"Social Justice & Empowerment", benefit:"Maintenance + tuition fee reimbursement", link:"https://scholarships.gov.in" },
+  { id:29, name:"Soil Health Card", cat:"farmer",      full:"Soil Health Card Scheme",                               desc:"Provides farmers a soil health card with crop-wise recommendations for nutrients and fertilizers to improve soil health and productivity.", eligibility:"All farmers with agricultural land across India", ministry:"Agriculture & Farmers Welfare", benefit:"Free soil testing + fertilizer recommendations", link:"https://soilhealth.dac.gov.in" },
+  { id:30, name:"PM Surya Ghar",    cat:"housing",     full:"Pradhan Mantri Surya Ghar Muft Bijli Yojana",           desc:"Provides rooftop solar panels free to households, giving 300 units of free electricity per month. Subsidy up to ₹78,000 on installation.", eligibility:"Residential households, priority to EWS/LIG with 1–2 kW systems", ministry:"New & Renewable Energy", benefit:"300 units/month free electricity + ₹78,000 subsidy", link:"https://pmsuryaghar.gov.in" },
+];
+
+// ─── TRANSLATIONS ───
+const TRANSLATIONS = {
+  English: {
+    nav_search:"Search", nav_eligibility:"Eligibility", nav_browse:"Browse", nav_chat:"Ask AI",
+    nav_office:"Office Locator", login:"Login", logout:"Logout", account:"Account",
+    office_title:"Find Your Nearest Government Office", office_sub:"Drag the pin on the map to your location, or use \"Use My Location\" — we'll find nearby government / scheme offices around you.",
+    btn_use_location:"Use My Location", btn_find_offices:"Find Offices Near Pin", office_drag_hint:"Tip: click and drag the marker to reposition it anywhere on the map.",
+    listen:"Listen", translating:"Translating...",
+    hero_badge:"AI-Powered · Built for Every Indian Citizen",
+    hero_title:"Your Guide to Every Government Welfare Scheme",
+    hero_desc:"Understand complex government schemes in plain language. Check eligibility, get personalized recommendations, and chat with our AI assistant — all in one place.",
+    stat_schemes:"Schemes Covered", stat_langs:"Languages", stat_cats:"Categories", stat_free:"No API Key Needed",
+    search_title:"Search Schemes", search_sub:"Describe what you're looking for — our AI will find and explain relevant schemes for you.",
+    search_label:"What kind of scheme are you looking for?", search_placeholder:"e.g. scholarship for SC students, free ration for BPL families...",
+    btn_search:"Search", chip_scholar:"Girl Scholarship", chip_maternity:"Maternity Benefit",
+    elig_title:"Check Your Eligibility", elig_sub:"Enter your details and our AI will recommend schemes you qualify for.",
+    personal_details:"Personal Details", residence_family:"Residence & Family",
+    lbl_age:"Age", lbl_gender:"Gender", lbl_category:"Category", lbl_income:"Annual Family Income (₹)",
+    lbl_occupation:"Occupation", lbl_state:"State", lbl_residence:"Residence Type",
+    lbl_marital:"Marital Status", lbl_education:"Education Level", lbl_bpl:"BPL (Below Poverty Line) card holder",
+    btn_check_elig:"Check My Eligibility", btn_clear:"Clear Form",
+    opt_select:"Select", opt_select_cat:"Select Category", opt_select_range:"Select Range", opt_select_state:"Select State",
+    opt_male:"Male", opt_female:"Female", opt_trans:"Transgender",
+    occ_farmer:"Farmer", occ_daily:"Daily Wage Worker", occ_student:"Student", occ_unemp:"Unemployed",
+    occ_self:"Self-employed", occ_salaried:"Salaried", occ_senior:"Senior Citizen", occ_disabled:"Differently Abled",
+    res_rural:"Rural", res_urban:"Urban", res_semi:"Semi-Urban",
+    mar_single:"Single", mar_married:"Married", mar_widow:"Widowed", mar_divorced:"Divorced",
+    edu_none:"No Formal Education", edu_primary:"Primary (1–5)", edu_secondary:"Secondary (6–10)",
+    edu_higher:"Higher Secondary (11–12)", edu_grad:"Graduate", edu_postgrad:"Post Graduate",
+    browse_title:"Browse All Schemes", browse_sub:"Explore government schemes by category. Click any card to get an AI-powered simplified explanation.",
+    filter_all:"All Schemes", filter_edu:"Education", filter_health:"Health", filter_emp:"Employment",
+    filter_women:"Women", filter_farmer:"Farmers", filter_housing:"Housing",
+    chat_title:"Ask SchemeSaathi AI", chat_sub:"Chat with our AI assistant about any government scheme, eligibility query, or application process.",
+    chat_online:"● Online · AI Powered · Free", chat_placeholder:"Ask about any government scheme...",
+    learn_more:"Learn More →", searching:"Searching...", checking:"Checking...",
+    finding_schemes:"Finding and simplifying relevant schemes...", matching:"Matching your profile with eligible schemes...",
+    schemes_for:"Schemes for:", ai_simplified:"AI Simplified", schemes_eligible:"Schemes You Are Eligible For",
+    personalized:"Personalized Results", enter_query:"Please enter a search query",
+    fill_fields:"Please fill Age, Gender, Category and Income at minimum",
+    hdr_subtitle:"AI-Powered Scheme Simplifier", welcome_msg:"Namaste! 🙏 I'm SchemeSaathi, your free AI guide to government welfare schemes. Ask me about any scheme — who can apply, what benefits it gives, how to apply, or what documents you need. How can I help you today?",
+    key_benefit:"Key Benefit", eligibility:"Eligibility", ai_explanation:"🤖 AI Simplified Explanation", official_site:"🔗 Official Website →", simplifying:"Simplifying for you..."
+  },
+  Hindi: {
+    nav_search:"खोजें", nav_eligibility:"पात्रता", nav_browse:"देखें", nav_chat:"AI से पूछें",
+    nav_office:"कार्यालय खोजें", login:"लॉगिन", logout:"लॉगआउट", account:"खाता",
+    office_title:"अपना निकटतम सरकारी कार्यालय खोजें", office_sub:"मानचित्र पर पिन को अपने स्थान पर खींचें, या \"मेरा स्थान उपयोग करें\" दबाएं — हम आपके आस-पास के सरकारी कार्यालय खोज लेंगे।",
+    btn_use_location:"मेरा स्थान उपयोग करें", btn_find_offices:"पिन के पास कार्यालय खोजें", office_drag_hint:"सुझाव: मार्कर को कहीं भी खींचने के लिए क्लिक करके खींचें।",
+    listen:"सुनें", translating:"अनुवाद हो रहा है...",
+    hero_badge:"AI-संचालित · हर भारतीय नागरिक के लिए",
+    hero_title:"हर सरकारी कल्याण योजना के लिए आपका मार्गदर्शक",
+    hero_desc:"सरकारी योजनाओं को सरल भाषा में समझें। पात्रता जांचें, व्यक्तिगत सिफारिशें पाएं, और हमारे AI सहायक से बात करें।",
+    stat_schemes:"योजनाएं", stat_langs:"भाषाएं", stat_cats:"श्रेणियां", stat_free:"कोई API Key नहीं चाहिए",
+    search_title:"योजनाएं खोजें", search_sub:"आप क्या ढूंढ रहे हैं बताएं — हमारा AI आपके लिए संबंधित योजनाएं खोजेगा।",
+    search_label:"आप किस प्रकार की योजना ढूंढ रहे हैं?", search_placeholder:"जैसे SC छात्रों के लिए छात्रवृत्ति, BPL परिवारों के लिए मुफ्त राशन...",
+    btn_search:"खोजें", chip_scholar:"बालिका छात्रवृत्ति", chip_maternity:"मातृत्व लाभ",
+    elig_title:"अपनी पात्रता जांचें", elig_sub:"अपनी जानकारी डालें और हमारा AI आपके लिए योजनाएं बताएगा।",
+    personal_details:"व्यक्तिगत विवरण", residence_family:"निवास और परिवार",
+    lbl_age:"आयु", lbl_gender:"लिंग", lbl_category:"श्रेणी", lbl_income:"वार्षिक पारिवारिक आय (₹)",
+    lbl_occupation:"व्यवसाय", lbl_state:"राज्य", lbl_residence:"निवास प्रकार",
+    lbl_marital:"वैवाहिक स्थिति", lbl_education:"शिक्षा स्तर", lbl_bpl:"BPL (गरीबी रेखा से नीचे) कार्ड धारक",
+    btn_check_elig:"पात्रता जांचें", btn_clear:"फॉर्म साफ करें",
+    opt_select:"चुनें", opt_select_cat:"श्रेणी चुनें", opt_select_range:"सीमा चुनें", opt_select_state:"राज्य चुनें",
+    opt_male:"पुरुष", opt_female:"महिला", opt_trans:"ट्रांसजेंडर",
+    occ_farmer:"किसान", occ_daily:"दिहाड़ी मजदूर", occ_student:"छात्र", occ_unemp:"बेरोजगार",
+    occ_self:"स्व-रोजगार", occ_salaried:"वेतनभोगी", occ_senior:"वरिष्ठ नागरिक", occ_disabled:"दिव्यांग",
+    res_rural:"ग्रामीण", res_urban:"शहरी", res_semi:"अर्ध-शहरी",
+    mar_single:"अविवाहित", mar_married:"विवाहित", mar_widow:"विधवा/विधुर", mar_divorced:"तलाकशुदा",
+    edu_none:"कोई शिक्षा नहीं", edu_primary:"प्राथमिक (1–5)", edu_secondary:"माध्यमिक (6–10)",
+    edu_higher:"उच्च माध्यमिक (11–12)", edu_grad:"स्नातक", edu_postgrad:"स्नातकोत्तर",
+    browse_title:"सभी योजनाएं देखें", browse_sub:"श्रेणी के अनुसार सरकारी योजनाएं खोजें। किसी भी कार्ड पर क्लिक करके AI द्वारा सरलीकृत जानकारी पाएं।",
+    filter_all:"सभी योजनाएं", filter_edu:"शिक्षा", filter_health:"स्वास्थ्य", filter_emp:"रोजगार",
+    filter_women:"महिलाएं", filter_farmer:"किसान", filter_housing:"आवास",
+    chat_title:"SchemeSaathi AI से पूछें", chat_sub:"किसी भी सरकारी योजना, पात्रता या आवेदन प्रक्रिया के बारे में हमारे AI सहायक से बात करें।",
+    chat_online:"● ऑनलाइन · AI संचालित · मुफ्त", chat_placeholder:"किसी भी सरकारी योजना के बारे में पूछें...",
+    learn_more:"अधिक जानें →", searching:"खोज रहे हैं...", checking:"जांच रहे हैं...",
+    finding_schemes:"संबंधित योजनाएं खोजी और सरलीकृत की जा रही हैं...", matching:"आपकी प्रोफाइल के अनुसार योजनाएं मिला रहे हैं...",
+    schemes_for:"के लिए योजनाएं:", ai_simplified:"AI सरलीकृत", schemes_eligible:"आप इन योजनाओं के पात्र हैं",
+    personalized:"व्यक्तिगत परिणाम", enter_query:"कृपया खोज प्रश्न दर्ज करें",
+    fill_fields:"कृपया कम से कम आयु, लिंग, श्रेणी और आय भरें",
+    hdr_subtitle:"AI-संचालित योजना सरलीकरण", welcome_msg:"नमस्ते! 🙏 मैं SchemeSaathi हूं, सरकारी कल्याण योजनाओं के लिए आपका मुफ्त AI मार्गदर्शक। किसी भी योजना के बारे में पूछें — कौन आवेदन कर सकता है, क्या लाभ मिलता है, कैसे आवेदन करें। आज मैं आपकी कैसे मदद कर सकता हूं?",
+    key_benefit:"मुख्य लाभ", eligibility:"पात्रता", ai_explanation:"🤖 AI सरलीकृत व्याख्या", official_site:"🔗 आधिकारिक वेबसाइट →", simplifying:"आपके लिए सरल बनाया जा रहा है..."
+  },
+  Tamil: {
+    nav_search:"தேடு", nav_eligibility:"தகுதி", nav_browse:"பார்வை", nav_chat:"AI கேள்",
+    nav_office:"அலுவலகம் கண்டறி", login:"உள்நுழை", logout:"வெளியேறு", account:"கணக்கு",
+    office_title:"உங்கள் அருகிலுள்ள அரசு அலுவலகத்தை கண்டறியவும்", office_sub:"வரைபடத்தில் உள்ள பின்னை உங்கள் இருப்பிடத்திற்கு இழுக்கவும், அல்லது \"என் இருப்பிடத்தைப் பயன்படுத்து\" பொத்தானை அழுத்தவும் — அருகிலுள்ள அரசு அலுவலகங்களை கண்டறிவோம்.",
+    btn_use_location:"என் இருப்பிடத்தைப் பயன்படுத்து", btn_find_offices:"பின் அருகே அலுவலகங்களைக் கண்டறி", office_drag_hint:"குறிப்பு: மார்க்கரை இழுத்து விட வேண்டிய இடத்தில் விடவும்.",
+    listen:"கேளுங்கள்", translating:"மொழிபெயர்க்கப்படுகிறது...",
+    hero_badge:"AI-இயக்கப்பட்டது · ஒவ்வொரு இந்திய குடிமகனுக்கும்",
+    hero_title:"ஒவ்வொரு அரசு நலத் திட்டத்திற்கும் உங்கள் வழிகாட்டி",
+    hero_desc:"அரசு திட்டங்களை எளிய மொழியில் புரிந்துகொள்ளுங்கள். தகுதி சரிபார்க்கவும், AI உதவியாளரிடம் பேசவும்.",
+    stat_schemes:"திட்டங்கள்", stat_langs:"மொழிகள்", stat_cats:"பிரிவுகள்", stat_free:"API Key தேவையில்லை",
+    search_title:"திட்டங்களை தேடுங்கள்", search_sub:"நீங்கள் என்ன தேடுகிறீர்கள் என்று சொல்லுங்கள் — எங்கள் AI தொடர்புடைய திட்டங்களை கண்டுபிடிக்கும்.",
+    search_label:"நீங்கள் என்ன திட்டம் தேடுகிறீர்கள்?", search_placeholder:"எ.கா. SC மாணவர்களுக்கு உதவித்தொகை, BPL குடும்பங்களுக்கு இலவச ரேஷன்...",
+    btn_search:"தேடு", chip_scholar:"பெண் உதவித்தொகை", chip_maternity:"மகப்பேறு நலன்",
+    elig_title:"உங்கள் தகுதியை சரிபார்க்கவும்", elig_sub:"உங்கள் விவரங்களை உள்ளிட்டால், எங்கள் AI நீங்கள் தகுதியான திட்டங்களை பரிந்துரைக்கும்.",
+    personal_details:"தனிப்பட்ட விவரங்கள்", residence_family:"வசிப்பிடம் & குடும்பம்",
+    lbl_age:"வயது", lbl_gender:"பாலினம்", lbl_category:"வகை", lbl_income:"வருடாந்திர குடும்ப வருமானம் (₹)",
+    lbl_occupation:"தொழில்", lbl_state:"மாநிலம்", lbl_residence:"வசிப்பிட வகை",
+    lbl_marital:"திருமண நிலை", lbl_education:"கல்வி நிலை", lbl_bpl:"BPL (வறுமைக் கோட்டிற்கு கீழ்) அட்டைதாரர்",
+    btn_check_elig:"தகுதி சரிபார்க்கவும்", btn_clear:"படிவத்தை அழிக்கவும்",
+    opt_select:"தேர்ந்தெடுக்கவும்", opt_select_cat:"வகை தேர்ந்தெடுக்கவும்", opt_select_range:"வரம்பு தேர்ந்தெடுக்கவும்", opt_select_state:"மாநிலம் தேர்ந்தெடுக்கவும்",
+    opt_male:"ஆண்", opt_female:"பெண்", opt_trans:"மூன்றாம் பாலினம்",
+    occ_farmer:"விவசாயி", occ_daily:"தினக்கூலி தொழிலாளி", occ_student:"மாணவர்", occ_unemp:"வேலையற்றவர்",
+    occ_self:"சுய தொழில்", occ_salaried:"ஊதியம் பெறுபவர்", occ_senior:"மூத்த குடிமகன்", occ_disabled:"மாற்றுத்திறனாளி",
+    res_rural:"கிராமப்புறம்", res_urban:"நகர்ப்புறம்", res_semi:"அரை நகர்ப்புறம்",
+    mar_single:"திருமணமாகாதவர்", mar_married:"திருமணமானவர்", mar_widow:"விதவை/விதுரர்", mar_divorced:"விவாகரத்து",
+    edu_none:"முறையான கல்வி இல்லை", edu_primary:"தொடக்கக் கல்வி (1–5)", edu_secondary:"இடைநிலை (6–10)",
+    edu_higher:"உயர்நிலை (11–12)", edu_grad:"பட்டதாரி", edu_postgrad:"முதுகலை",
+    browse_title:"அனைத்து திட்டங்களையும் பார்க்கவும்", browse_sub:"வகை வாரியாக அரசு திட்டங்களை ஆராயுங்கள்.",
+    filter_all:"அனைத்து திட்டங்கள்", filter_edu:"கல்வி", filter_health:"சுகாதாரம்", filter_emp:"வேலைவாய்ப்பு",
+    filter_women:"பெண்கள்", filter_farmer:"விவசாயிகள்", filter_housing:"வீட்டுவசதி",
+    chat_title:"SchemeSaathi AI இடம் கேளுங்கள்", chat_sub:"எந்த அரசு திட்டம், தகுதி அல்லது விண்ணப்ப செயல்முறை பற்றியும் எங்கள் AI உதவியாளரிடம் பேசுங்கள்.",
+    chat_online:"● ஆன்லைன் · AI இயக்கப்பட்டது · இலவசம்", chat_placeholder:"எந்த அரசு திட்டம் பற்றியும் கேளுங்கள்...",
+    learn_more:"மேலும் அறிக →", searching:"தேடுகிறோம்...", checking:"சரிபார்க்கிறோம்...",
+    finding_schemes:"தொடர்புடைய திட்டங்களை கண்டுபிடிக்கிறோம்...", matching:"உங்கள் சுயவிவரத்துடன் திட்டங்களை பொருத்துகிறோம்...",
+    schemes_for:"திட்டங்கள்:", ai_simplified:"AI எளிமைப்படுத்தியது", schemes_eligible:"நீங்கள் தகுதியான திட்டங்கள்",
+    personalized:"தனிப்பயனாக்கப்பட்ட முடிவுகள்", enter_query:"தயவுசெய்து தேடல் வினவலை உள்ளிடவும்",
+    fill_fields:"குறைந்தபட்சம் வயது, பாலினம், வகை மற்றும் வருமானம் நிரப்பவும்",
+    hdr_subtitle:"AI-இயக்கப்பட்ட திட்ட எளிமைப்படுத்தி", welcome_msg:"வணக்கம்! 🙏 நான் SchemeSaathi, அரசு நலத் திட்டங்களுக்கான உங்கள் இலவச AI வழிகாட்டி. எந்த திட்டத்தைப் பற்றியும் கேளுங்கள். இன்று நான் எவ்வாறு உங்களுக்கு உதவலாம்?",
+    key_benefit:"முக்கிய நலன்", eligibility:"தகுதி", ai_explanation:"🤖 AI எளிமைப்படுத்தப்பட்ட விளக்கம்", official_site:"🔗 அதிகாரப்பூர்வ இணையதளம் →", simplifying:"உங்களுக்காக எளிமைப்படுத்துகிறோம்..."
+  },
+  Telugu: {
+    nav_search:"వెతకండి", nav_eligibility:"అర్హత", nav_browse:"చూడండి", nav_chat:"AI అడగండి",
+    hero_badge:"AI-శక్తివంతం · ప్రతి భారతీయ పౌరుడికి",
+    hero_title:"ప్రతి ప్రభుత్వ సంక్షేమ పథకానికి మీ మార్గదర్శి",
+    hero_desc:"ప్రభుత్వ పథకాలను సులభమైన భాషలో అర్థం చేసుకోండి. అర్హత తనిఖీ చేయండి, AI సహాయకుడితో మాట్లాడండి.",
+    stat_schemes:"పథకాలు", stat_langs:"భాషలు", stat_cats:"వర్గాలు", stat_free:"API Key అవసరం లేదు",
+    search_title:"పథకాలు వెతకండి", search_sub:"మీరు ఏమి వెతుకుతున్నారో చెప్పండి — మా AI సంబంధిత పథకాలు కనుగొంటుంది.",
+    search_label:"మీరు ఏ పథకం కోసం వెతుకుతున్నారు?", search_placeholder:"ఉదా. SC విద్యార్థులకు స్కాలర్‌షిప్, BPL కుటుంబాలకు ఉచిత రేషన్...",
+    btn_search:"వెతకండి", chip_scholar:"బాలిక స్కాలర్‌షిప్", chip_maternity:"ప్రసూతి ప్రయోజనం",
+    elig_title:"మీ అర్హత తనిఖీ చేయండి", elig_sub:"మీ వివరాలు నమోదు చేయండి, మా AI మీకు అర్హమైన పథకాలు సిఫారసు చేస్తుంది.",
+    personal_details:"వ్యక్తిగత వివరాలు", residence_family:"నివాసం & కుటుంబం",
+    lbl_age:"వయసు", lbl_gender:"లింగం", lbl_category:"వర్గం", lbl_income:"వార్షిక కుటుంబ ఆదాయం (₹)",
+    lbl_occupation:"వృత్తి", lbl_state:"రాష్ట్రం", lbl_residence:"నివాస రకం",
+    lbl_marital:"వైవాహిక స్థితి", lbl_education:"విద్యా స్థాయి", lbl_bpl:"BPL (పేదరేఖకు దిగువన) కార్డుదారు",
+    btn_check_elig:"అర్హత తనిఖీ చేయండి", btn_clear:"ఫారం క్లియర్ చేయండి",
+    opt_select:"ఎంచుకోండి", opt_select_cat:"వర్గం ఎంచుకోండి", opt_select_range:"పరిధి ఎంచుకోండి", opt_select_state:"రాష్ట్రం ఎంచుకోండి",
+    opt_male:"పురుషుడు", opt_female:"స్త్రీ", opt_trans:"తృతీయ లింగం",
+    occ_farmer:"రైతు", occ_daily:"రోజువారీ వేతన కార్మికుడు", occ_student:"విద్యార్థి", occ_unemp:"నిరుద్యోగి",
+    occ_self:"స్వయం ఉపాధి", occ_salaried:"వేతన ఉద్యోగి", occ_senior:"వృద్ధ పౌరుడు", occ_disabled:"వికలాంగుడు",
+    res_rural:"గ్రామీణ", res_urban:"పట్టణ", res_semi:"అర్థ-పట్టణ",
+    mar_single:"అవివాహిత", mar_married:"వివాహిత", mar_widow:"వితంతువు/విధురుడు", mar_divorced:"విడాకులు",
+    edu_none:"అధికారిక విద్య లేదు", edu_primary:"ప్రాథమిక (1–5)", edu_secondary:"మాధ్యమిక (6–10)",
+    edu_higher:"ఉన్నత మాధ్యమిక (11–12)", edu_grad:"గ్రాడ్యుయేట్", edu_postgrad:"పోస్ట్ గ్రాడ్యుయేట్",
+    browse_title:"అన్ని పథకాలు చూడండి", browse_sub:"వర్గం వారీగా ప్రభుత్వ పథకాలు అన్వేషించండి.",
+    filter_all:"అన్ని పథకాలు", filter_edu:"విద్య", filter_health:"ఆరోగ్యం", filter_emp:"ఉపాధి",
+    filter_women:"మహిళలు", filter_farmer:"రైతులు", filter_housing:"గృహ నిర్మాణం",
+    chat_title:"SchemeSaathi AI ని అడగండి", chat_sub:"ఏదైనా ప్రభుత్వ పథకం గురించి మా AI సహాయకుడితో మాట్లాడండి.",
+    chat_online:"● ఆన్‌లైన్ · AI శక్తివంతం · ఉచితం", chat_placeholder:"ఏదైనా ప్రభుత్వ పథకం గురించి అడగండి...",
+    learn_more:"మరింత తెలుసుకోండి →", searching:"వెతుకుతున్నాం...", checking:"తనిఖీ చేస్తున్నాం...",
+    finding_schemes:"సంబంధిత పథకాలు కనుగొంటున్నాం...", matching:"మీ ప్రొఫైల్‌తో పథకాలు సరిపోల్చుతున్నాం...",
+    schemes_for:"పథకాలు:", ai_simplified:"AI సరళీకృతం", schemes_eligible:"మీరు అర్హమైన పథకాలు",
+    personalized:"వ్యక్తిగతీకరించిన ఫలితాలు", enter_query:"దయచేసి శోధన ప్రశ్నను నమోదు చేయండి",
+    fill_fields:"కనీసం వయసు, లింగం, వర్గం మరియు ఆదాయం నింపండి",
+    hdr_subtitle:"AI-శక్తివంతమైన పథక సరళీకరణి", welcome_msg:"నమస్తే! 🙏 నేను SchemeSaathi, ప్రభుత్వ సంక్షేమ పథకాల కోసం మీ ఉచిత AI మార్గదర్శి. ఏదైనా పథకం గురించి అడగండి. ఈ రోజు నేను మీకు ఎలా సహాయం చేయగలను?",
+    key_benefit:"ముఖ్య ప్రయోజనం", eligibility:"అర్హత", ai_explanation:"🤖 AI సరళీకృత వివరణ", official_site:"🔗 అధికారిక వెబ్‌సైట్ →", simplifying:"మీ కోసం సరళీకరిస్తున్నాం..."
+  },
+  Kannada: {
+    nav_search:"ಹುಡುಕಿ", nav_eligibility:"ಅರ್ಹತೆ", nav_browse:"ನೋಡಿ", nav_chat:"AI ಕೇಳಿ",
+    hero_badge:"AI-ಚಾಲಿತ · ಪ್ರತಿ ಭಾರತೀಯ ನಾಗರಿಕರಿಗಾಗಿ",
+    hero_title:"ಪ್ರತಿ ಸರ್ಕಾರಿ ಕಲ್ಯಾಣ ಯೋಜನೆಗೆ ನಿಮ್ಮ ಮಾರ್ಗದರ್ಶಿ",
+    hero_desc:"ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಸರಳ ಭಾಷೆಯಲ್ಲಿ ಅರ್ಥ ಮಾಡಿಕೊಳ್ಳಿ. ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ, AI ಸಹಾಯಕರೊಂದಿಗೆ ಮಾತನಾಡಿ.",
+    stat_schemes:"ಯೋಜನೆಗಳು", stat_langs:"ಭಾಷೆಗಳು", stat_cats:"ವರ್ಗಗಳು", stat_free:"API Key ಅಗತ್ಯವಿಲ್ಲ",
+    search_title:"ಯೋಜನೆಗಳನ್ನು ಹುಡುಕಿ", search_sub:"ನೀವು ಏನು ಹುಡುಕುತ್ತಿದ್ದೀರಿ ಎಂದು ಹೇಳಿ — ನಮ್ಮ AI ಸಂಬಂಧಿತ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕುತ್ತದೆ.",
+    search_label:"ನೀವು ಯಾವ ರೀತಿಯ ಯೋಜನೆಯನ್ನು ಹುಡುಕುತ್ತಿದ್ದೀರಿ?", search_placeholder:"ಉದಾ. SC ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ವಿದ್ಯಾರ್ಥಿ ವೇತನ, BPL ಕುಟುಂಬಗಳಿಗೆ ಉಚಿತ ಪಡಿತರ...",
+    btn_search:"ಹುಡುಕಿ", chip_scholar:"ಹೆಣ್ಣು ಮಕ್ಕಳ ವಿದ್ಯಾರ್ಥಿ ವೇತನ", chip_maternity:"ಹೆರಿಗೆ ಪ್ರಯೋಜನ",
+    elig_title:"ನಿಮ್ಮ ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ", elig_sub:"ನಿಮ್ಮ ವಿವರಗಳನ್ನು ನಮೂದಿಸಿ, ನಮ್ಮ AI ನಿಮಗೆ ಅರ್ಹ ಯೋಜನೆಗಳನ್ನು ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.",
+    personal_details:"ವೈಯಕ್ತಿಕ ವಿವರಗಳು", residence_family:"ವಾಸಸ್ಥಾನ & ಕುಟುಂಬ",
+    lbl_age:"ವಯಸ್ಸು", lbl_gender:"ಲಿಂಗ", lbl_category:"ವರ್ಗ", lbl_income:"ವಾರ್ಷಿಕ ಕುಟುಂಬ ಆದಾಯ (₹)",
+    lbl_occupation:"ಉದ್ಯೋಗ", lbl_state:"ರಾಜ್ಯ", lbl_residence:"ವಾಸಸ್ಥಾನ ಪ್ರಕಾರ",
+    lbl_marital:"ವೈವಾಹಿಕ ಸ್ಥಿತಿ", lbl_education:"ಶಿಕ್ಷಣ ಮಟ್ಟ", lbl_bpl:"BPL (ಬಡತನ ರೇಖೆಯ ಕೆಳಗೆ) ಕಾರ್ಡ್ ಹೊಂದಿರುವರು",
+    btn_check_elig:"ಅರ್ಹತೆ ಪರಿಶೀಲಿಸಿ", btn_clear:"ಫಾರ್ಮ್ ತೆರವು ಮಾಡಿ",
+    opt_select:"ಆಯ್ಕೆ ಮಾಡಿ", opt_select_cat:"ವರ್ಗ ಆಯ್ಕೆ ಮಾಡಿ", opt_select_range:"ಶ್ರೇಣಿ ಆಯ್ಕೆ ಮಾಡಿ", opt_select_state:"ರಾಜ್ಯ ಆಯ್ಕೆ ಮಾಡಿ",
+    opt_male:"ಪುರುಷ", opt_female:"ಮಹಿಳೆ", opt_trans:"ತೃತೀಯ ಲಿಂಗ",
+    occ_farmer:"ರೈತ", occ_daily:"ದಿನಗೂಲಿ ಕಾರ್ಮಿಕ", occ_student:"ವಿದ್ಯಾರ್ಥಿ", occ_unemp:"ನಿರುದ್ಯೋಗಿ",
+    occ_self:"ಸ್ವಯಂ ಉದ್ಯೋಗ", occ_salaried:"ವೇತನ ಉದ್ಯೋಗಿ", occ_senior:"ಹಿರಿಯ ನಾಗರಿಕ", occ_disabled:"ವಿಕಲಚೇತನ",
+    res_rural:"ಗ್ರಾಮೀಣ", res_urban:"ನಗರ", res_semi:"ಅರೆ-ನಗರ",
+    mar_single:"ಅವಿವಾಹಿತ", mar_married:"ವಿವಾಹಿತ", mar_widow:"ವಿಧವೆ/ವಿಧುರ", mar_divorced:"ವಿಚ್ಛೇದಿತ",
+    edu_none:"ಔಪಚಾರಿಕ ಶಿಕ್ಷಣವಿಲ್ಲ", edu_primary:"ಪ್ರಾಥಮಿಕ (1–5)", edu_secondary:"ಮಾಧ್ಯಮಿಕ (6–10)",
+    edu_higher:"ಉನ್ನತ ಮಾಧ್ಯಮಿಕ (11–12)", edu_grad:"ಪದವೀಧರ", edu_postgrad:"ಸ್ನಾತಕೋತ್ತರ",
+    browse_title:"ಎಲ್ಲಾ ಯೋಜನೆಗಳನ್ನು ನೋಡಿ", browse_sub:"ವರ್ಗದ ಮೂಲಕ ಸರ್ಕಾರಿ ಯೋಜನೆಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
+    filter_all:"ಎಲ್ಲಾ ಯೋಜನೆಗಳು", filter_edu:"ಶಿಕ್ಷಣ", filter_health:"ಆರೋಗ್ಯ", filter_emp:"ಉದ್ಯೋಗ",
+    filter_women:"ಮಹಿಳೆಯರು", filter_farmer:"ರೈತರು", filter_housing:"ವಸತಿ",
+    chat_title:"SchemeSaathi AI ಗೆ ಕೇಳಿ", chat_sub:"ಯಾವುದೇ ಸರ್ಕಾರಿ ಯೋಜನೆ, ಅರ್ಹತೆ ಅಥವಾ ಅರ್ಜಿ ಪ್ರಕ್ರಿಯೆ ಬಗ್ಗೆ ನಮ್ಮ AI ಸಹಾಯಕರೊಂದಿಗೆ ಮಾತನಾಡಿ.",
+    chat_online:"● ಆನ್‌ಲೈನ್ · AI ಚಾಲಿತ · ಉಚಿತ", chat_placeholder:"ಯಾವುದೇ ಸರ್ಕಾರಿ ಯೋಜನೆ ಬಗ್ಗೆ ಕೇಳಿ...",
+    learn_more:"ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ →", searching:"ಹುಡುಕುತ್ತಿದ್ದೇವೆ...", checking:"ಪರಿಶೀಲಿಸುತ್ತಿದ್ದೇವೆ...",
+    finding_schemes:"ಸಂಬಂಧಿತ ಯೋಜನೆಗಳನ್ನು ಹುಡುಕುತ್ತಿದ್ದೇವೆ...", matching:"ನಿಮ್ಮ ಪ್ರೊಫೈಲ್‌ನೊಂದಿಗೆ ಯೋಜನೆಗಳನ್ನು ಹೊಂದಿಸುತ್ತಿದ್ದೇವೆ...",
+    schemes_for:"ಯೋಜನೆಗಳು:", ai_simplified:"AI ಸರಳೀಕೃತ", schemes_eligible:"ನೀವು ಅರ್ಹ ಯೋಜನೆಗಳು",
+    personalized:"ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಫಲಿತಾಂಶಗಳು", enter_query:"ದಯವಿಟ್ಟು ಹುಡುಕಾಟ ಪ್ರಶ್ನೆಯನ್ನು ನಮೂದಿಸಿ",
+    fill_fields:"ಕನಿಷ್ಠ ವಯಸ್ಸು, ಲಿಂಗ, ವರ್ಗ ಮತ್ತು ಆದಾಯ ತುಂಬಿಸಿ",
+    hdr_subtitle:"AI-ಚಾಲಿತ ಯೋಜನೆ ಸರಳೀಕರಣ", welcome_msg:"ನಮಸ್ಕಾರ! 🙏 ನಾನು SchemeSaathi, ಸರ್ಕಾರಿ ಕಲ್ಯಾಣ ಯೋಜನೆಗಳಿಗಾಗಿ ನಿಮ್ಮ ಉಚಿತ AI ಮಾರ್ಗದರ್ಶಿ. ಯಾವುದೇ ಯೋಜನೆ ಬಗ್ಗೆ ಕೇಳಿ. ಇಂದು ನಾನು ನಿಮಗೆ ಹೇಗೆ ಸಹಾಯ ಮಾಡಬಹುದು?",
+    key_benefit:"ಪ್ರಮುಖ ಪ್ರಯೋಜನ", eligibility:"ಅರ್ಹತೆ", ai_explanation:"🤖 AI ಸರಳೀಕೃತ ವಿವರಣೆ", official_site:"🔗 ಅಧಿಕೃತ ವೆಬ್‌ಸೈಟ್ →", simplifying:"ನಿಮಗಾಗಿ ಸರಳೀಕರಿಸುತ್ತಿದ್ದೇವೆ..."
+  },
+  Bengali: {
+    nav_search:"খুঁজুন", nav_eligibility:"যোগ্যতা", nav_browse:"দেখুন", nav_chat:"AI জিজ্ঞেস করুন",
+    hero_badge:"AI-চালিত · প্রতিটি ভারতীয় নাগরিকের জন্য",
+    hero_title:"প্রতিটি সরকারি কল্যাণ প্রকল্পের জন্য আপনার গাইড",
+    hero_desc:"সরকারি প্রকল্পগুলি সহজ ভাষায় বুঝুন। যোগ্যতা যাচাই করুন, AI সহকারীর সাথে কথা বলুন।",
+    stat_schemes:"প্রকল্প", stat_langs:"ভাষা", stat_cats:"বিভাগ", stat_free:"API Key দরকার নেই",
+    search_title:"প্রকল্প খুঁজুন", search_sub:"আপনি কী খুঁজছেন বলুন — আমাদের AI প্রাসঙ্গিক প্রকল্পগুলি খুঁজে বের করবে।",
+    search_label:"আপনি কোন ধরনের প্রকল্প খুঁজছেন?", search_placeholder:"যেমন SC ছাত্রদের বৃত্তি, BPL পরিবারের জন্য বিনামূল্যে রেশন...",
+    btn_search:"খুঁজুন", chip_scholar:"মেয়ে বৃত্তি", chip_maternity:"মাতৃত্ব সুবিধা",
+    elig_title:"আপনার যোগ্যতা যাচাই করুন", elig_sub:"আপনার বিবরণ লিখুন এবং আমাদের AI আপনার জন্য উপযুক্ত প্রকল্প সুপারিশ করবে।",
+    personal_details:"ব্যক্তিগত বিবরণ", residence_family:"বাসস্থান ও পরিবার",
+    lbl_age:"বয়স", lbl_gender:"লিঙ্গ", lbl_category:"বিভাগ", lbl_income:"বার্ষিক পারিবারিক আয় (₹)",
+    lbl_occupation:"পেশা", lbl_state:"রাজ্য", lbl_residence:"বাসস্থানের ধরন",
+    lbl_marital:"বৈবাহিক অবস্থা", lbl_education:"শিক্ষার স্তর", lbl_bpl:"BPL (দারিদ্র্যসীমার নিচে) কার্ডধারক",
+    btn_check_elig:"যোগ্যতা যাচাই করুন", btn_clear:"ফর্ম পরিষ্কার করুন",
+    opt_select:"বেছে নিন", opt_select_cat:"বিভাগ বেছে নিন", opt_select_range:"পরিসর বেছে নিন", opt_select_state:"রাজ্য বেছে নিন",
+    opt_male:"পুরুষ", opt_female:"মহিলা", opt_trans:"তৃতীয় লিঙ্গ",
+    occ_farmer:"কৃষক", occ_daily:"দৈনিক মজুরি কর্মী", occ_student:"ছাত্র", occ_unemp:"বেকার",
+    occ_self:"স্ব-নিযুক্ত", occ_salaried:"বেতনভোগী", occ_senior:"প্রবীণ নাগরিক", occ_disabled:"প্রতিবন্ধী",
+    res_rural:"গ্রামীণ", res_urban:"শহুরে", res_semi:"আধা-শহুরে",
+    mar_single:"অবিবাহিত", mar_married:"বিবাহিত", mar_widow:"বিধবা/বিপত্নীক", mar_divorced:"তালাকপ্রাপ্ত",
+    edu_none:"কোনো আনুষ্ঠানিক শিক্ষা নেই", edu_primary:"প্রাথমিক (১–৫)", edu_secondary:"মাধ্যমিক (৬–১০)",
+    edu_higher:"উচ্চ মাধ্যমিক (১১–১২)", edu_grad:"স্নাতক", edu_postgrad:"স্নাতকোত্তর",
+    browse_title:"সমস্ত প্রকল্প দেখুন", browse_sub:"বিভাগ অনুযায়ী সরকারি প্রকল্প অন্বেষণ করুন।",
+    filter_all:"সমস্ত প্রকল্প", filter_edu:"শিক্ষা", filter_health:"স্বাস্থ্য", filter_emp:"কর্মসংস্থান",
+    filter_women:"মহিলা", filter_farmer:"কৃষক", filter_housing:"আবাসন",
+    chat_title:"SchemeSaathi AI-কে জিজ্ঞেস করুন", chat_sub:"যেকোনো সরকারি প্রকল্প, যোগ্যতা বা আবেদন প্রক্রিয়া সম্পর্কে আমাদের AI সহকারীর সাথে কথা বলুন।",
+    chat_online:"● অনলাইন · AI চালিত · বিনামূল্যে", chat_placeholder:"যেকোনো সরকারি প্রকল্প সম্পর্কে জিজ্ঞেস করুন...",
+    learn_more:"আরও জানুন →", searching:"খুঁজছি...", checking:"যাচাই করছি...",
+    finding_schemes:"প্রাসঙ্গিক প্রকল্প খুঁজে বের করছি...", matching:"আপনার প্রোফাইলের সাথে প্রকল্প মেলাচ্ছি...",
+    schemes_for:"প্রকল্পসমূহ:", ai_simplified:"AI সরলীকৃত", schemes_eligible:"আপনি যোগ্য প্রকল্পসমূহ",
+    personalized:"ব্যক্তিগতকৃত ফলাফল", enter_query:"অনুগ্রহ করে অনুসন্ধান প্রশ্ন লিখুন",
+    fill_fields:"অনুগ্রহ করে কমপক্ষে বয়স, লিঙ্গ, বিভাগ এবং আয় পূরণ করুন",
+    hdr_subtitle:"AI-চালিত প্রকল্প সরলীকরণ", welcome_msg:"নমস্কার! 🙏 আমি SchemeSaathi, সরকারি কল্যাণ প্রকল্পের জন্য আপনার বিনামূল্যে AI গাইড। যেকোনো প্রকল্প সম্পর্কে জিজ্ঞেস করুন। আজ আমি আপনাকে কীভাবে সাহায্য করতে পারি?",
+    key_benefit:"মূল সুবিধা", eligibility:"যোগ্যতা", ai_explanation:"🤖 AI সরলীকৃত ব্যাখ্যা", official_site:"🔗 অফিসিয়াল ওয়েবসাইট →", simplifying:"আপনার জন্য সরল করছি..."
+  },
+  Marathi: {
+    nav_search:"शोधा", nav_eligibility:"पात्रता", nav_browse:"पहा", nav_chat:"AI विचारा",
+    hero_badge:"AI-चालित · प्रत्येक भारतीय नागरिकासाठी",
+    hero_title:"प्रत्येक सरकारी कल्याण योजनेसाठी तुमचा मार्गदर्शक",
+    hero_desc:"सरकारी योजना सोप्या भाषेत समजून घ्या. पात्रता तपासा, AI सहाय्यकाशी बोला.",
+    stat_schemes:"योजना", stat_langs:"भाषा", stat_cats:"श्रेणी", stat_free:"API Key नाही",
+    search_title:"योजना शोधा", search_sub:"तुम्हाला काय हवे आहे सांगा — आमचा AI संबंधित योजना शोधेल.",
+    search_label:"तुम्ही कोणत्या प्रकारची योजना शोधत आहात?", search_placeholder:"उदा. SC विद्यार्थ्यांसाठी शिष्यवृत्ती, BPL कुटुंबांसाठी मोफत रेशन...",
+    btn_search:"शोधा", chip_scholar:"मुली शिष्यवृत्ती", chip_maternity:"मातृत्व लाभ",
+    elig_title:"तुमची पात्रता तपासा", elig_sub:"तुमचे तपशील द्या आणि आमचा AI तुमच्यासाठी योजना शिफारस करेल.",
+    personal_details:"वैयक्तिक तपशील", residence_family:"राहण्याचे ठिकाण व कुटुंब",
+    lbl_age:"वय", lbl_gender:"लिंग", lbl_category:"श्रेणी", lbl_income:"वार्षिक कौटुंबिक उत्पन्न (₹)",
+    lbl_occupation:"व्यवसाय", lbl_state:"राज्य", lbl_residence:"निवास प्रकार",
+    lbl_marital:"वैवाहिक स्थिती", lbl_education:"शिक्षण पातळी", lbl_bpl:"BPL (दारिद्र्यरेषेखाली) कार्डधारक",
+    btn_check_elig:"पात्रता तपासा", btn_clear:"फॉर्म साफ करा",
+    opt_select:"निवडा", opt_select_cat:"श्रेणी निवडा", opt_select_range:"श्रेणी निवडा", opt_select_state:"राज्य निवडा",
+    opt_male:"पुरुष", opt_female:"स्त्री", opt_trans:"तृतीयपंथी",
+    occ_farmer:"शेतकरी", occ_daily:"रोजंदारी मजूर", occ_student:"विद्यार्थी", occ_unemp:"बेरोजगार",
+    occ_self:"स्वयंरोजगार", occ_salaried:"वेतनधारक", occ_senior:"ज्येष्ठ नागरिक", occ_disabled:"दिव्यांग",
+    res_rural:"ग्रामीण", res_urban:"शहरी", res_semi:"निमशहरी",
+    mar_single:"अविवाहित", mar_married:"विवाहित", mar_widow:"विधवा/विधुर", mar_divorced:"घटस्फोटित",
+    edu_none:"औपचारिक शिक्षण नाही", edu_primary:"प्राथमिक (१–५)", edu_secondary:"माध्यमिक (६–१०)",
+    edu_higher:"उच्च माध्यमिक (११–१२)", edu_grad:"पदवीधर", edu_postgrad:"पदव्युत्तर",
+    browse_title:"सर्व योजना पहा", browse_sub:"श्रेणीनुसार सरकारी योजना शोधा.",
+    filter_all:"सर्व योजना", filter_edu:"शिक्षण", filter_health:"आरोग्य", filter_emp:"रोजगार",
+    filter_women:"महिला", filter_farmer:"शेतकरी", filter_housing:"गृहनिर्माण",
+    chat_title:"SchemeSaathi AI ला विचारा", chat_sub:"कोणत्याही सरकारी योजना, पात्रता किंवा अर्ज प्रक्रियेबद्दल आमच्या AI सहाय्यकाशी बोला.",
+    chat_online:"● ऑनलाइन · AI चालित · मोफत", chat_placeholder:"कोणत्याही सरकारी योजनेबद्दल विचारा...",
+    learn_more:"अधिक जाणून घ्या →", searching:"शोधत आहोत...", checking:"तपासत आहोत...",
+    finding_schemes:"संबंधित योजना शोधत आहोत...", matching:"तुमच्या प्रोफाइलशी योजना जुळवत आहोत...",
+    schemes_for:"योजना:", ai_simplified:"AI सरलीकृत", schemes_eligible:"तुम्ही पात्र असलेल्या योजना",
+    personalized:"वैयक्तिकृत निकाल", enter_query:"कृपया शोध प्रश्न प्रविष्ट करा",
+    fill_fields:"कृपया किमान वय, लिंग, श्रेणी आणि उत्पन्न भरा",
+    hdr_subtitle:"AI-चालित योजना सरलीकरण", welcome_msg:"नमस्कार! 🙏 मी SchemeSaathi आहे, सरकारी कल्याण योजनांसाठी तुमचा मोफत AI मार्गदर्शक. कोणत्याही योजनेबद्दल विचारा. आज मी तुम्हाला कशी मदत करू?",
+    key_benefit:"मुख्य लाभ", eligibility:"पात्रता", ai_explanation:"🤖 AI सरलीकृत स्पष्टीकरण", official_site:"🔗 अधिकृत वेबसाइट →", simplifying:"तुमच्यासाठी सरल करत आहोत..."
+  },
+  Gujarati: {
+    nav_search:"શોધો", nav_eligibility:"પાત્રતા", nav_browse:"જુઓ", nav_chat:"AI પૂછો",
+    hero_badge:"AI-સંચાલિત · દરેક ભારતીય નાગરિક માટે",
+    hero_title:"દરેક સરકારી કલ્યાણ યોજના માટે તમારો માર્ગદર્શક",
+    hero_desc:"સરકારી યોજનાઓ સરળ ભાષામાં સમજો. પાત્રતા ચકાસો, AI સહાયક સાથે વાત કરો.",
+    stat_schemes:"યોજનાઓ", stat_langs:"ભાષાઓ", stat_cats:"શ્રેણીઓ", stat_free:"API Key જરૂરી નથી",
+    search_title:"યોજનાઓ શોધો", search_sub:"તમે શું શોધી રહ્યા છો તે જણાવો — અમારા AI સંબંધિત યોજનાઓ શોધશે.",
+    search_label:"તમે કઈ પ્રકારની યોજના શોધો છો?", search_placeholder:"દા.ત. SC વિદ્યાર્થીઓ માટે શિષ્યવૃત્તિ, BPL પરિવારો માટે મફત રેશન...",
+    btn_search:"શોધો", chip_scholar:"બાળકી શિષ્યવૃત્તિ", chip_maternity:"માતૃત્વ લાભ",
+    elig_title:"તમારી પાત્રતા ચકાસો", elig_sub:"તમારી વિગતો દાખલ કરો અને અમારા AI તમારા માટે યોજનાઓ ભલામણ કરશે.",
+    personal_details:"વ્યક્તિગત વિગતો", residence_family:"નિવાસસ્થાન અને પરિવાર",
+    lbl_age:"ઉંમર", lbl_gender:"લિંગ", lbl_category:"શ્રેણી", lbl_income:"વાર્ષિક પારિવારિક આવક (₹)",
+    lbl_occupation:"વ્યવસાય", lbl_state:"રાજ્ય", lbl_residence:"નિવાસ પ્રકાર",
+    lbl_marital:"વૈવાહિક સ્થિતિ", lbl_education:"શૈક્ષણિક સ્તર", lbl_bpl:"BPL (ગરીબી રેખા નીચે) કાર્ડ ધારક",
+    btn_check_elig:"પાત્રતા ચકાસો", btn_clear:"ફોર્મ સાફ કરો",
+    opt_select:"પસંદ કરો", opt_select_cat:"શ્રેણી પસંદ કરો", opt_select_range:"શ્રેણી પસંદ કરો", opt_select_state:"રાજ્ય પસંદ કરો",
+    opt_male:"પુરૂષ", opt_female:"સ્ત્રી", opt_trans:"તૃતીય લિંગ",
+    occ_farmer:"ખેડૂત", occ_daily:"દૈનિક વેતન કામદાર", occ_student:"વિદ્યાર્થી", occ_unemp:"બેરોજગાર",
+    occ_self:"સ્વ-રોજગાર", occ_salaried:"પગારદાર", occ_senior:"વરિષ્ઠ નાગરિક", occ_disabled:"દિવ્યાંગ",
+    res_rural:"ગ્રામ્ય", res_urban:"શહેરી", res_semi:"અર્ધ-શહેરી",
+    mar_single:"અવિવાહિત", mar_married:"વિવાહિત", mar_widow:"વિધવા/વિધુર", mar_divorced:"છૂટાછેડા",
+    edu_none:"ઔપચારિક શિક્ષણ નથી", edu_primary:"પ્રાથમિક (1–5)", edu_secondary:"માધ્યમિક (6–10)",
+    edu_higher:"ઉચ્ચ માધ્યમિક (11–12)", edu_grad:"સ્નાતક", edu_postgrad:"અનુ-સ્નાતક",
+    browse_title:"બધી યોજનાઓ જુઓ", browse_sub:"શ્રેણી અનુસાર સરકારી યોજનાઓ શોધો.",
+    filter_all:"બધી યોજનાઓ", filter_edu:"શિક્ષણ", filter_health:"આરોગ્ય", filter_emp:"રોજગાર",
+    filter_women:"મહિલા", filter_farmer:"ખેડૂત", filter_housing:"ગૃહ નિર્માણ",
+    chat_title:"SchemeSaathi AI ને પૂછો", chat_sub:"કોઈ પણ સરકારી યોજના, પાત્રતા અથવા અરજી પ્રક્રિયા વિશે અમારા AI સહાયક સાથે વાત કરો.",
+    chat_online:"● ઓનલાઈન · AI સંચાલિત · મફત", chat_placeholder:"કોઈ પણ સરકારી યોજના વિશે પૂછો...",
+    learn_more:"વધુ જાણો →", searching:"શોધી રહ્યા છીએ...", checking:"ચકાસી રહ્યા છીએ...",
+    finding_schemes:"સંબંધિત યોજનાઓ શોધી રહ્યા છીએ...", matching:"તમારી પ્રોફાઇલ સાથે યોજનાઓ મેળ કરી રહ્યા છીએ...",
+    schemes_for:"યોજનાઓ:", ai_simplified:"AI સરળીકૃત", schemes_eligible:"તમે પાત્ર યોજનાઓ",
+    personalized:"વ્યક્તિગત પરિણામો", enter_query:"કૃપા કરી શોધ પ્રશ્ન દાખલ કરો",
+    fill_fields:"કૃપા કરી ઓછામાં ઓછી ઉંમર, લિંગ, શ્રેણી અને આવક ભરો",
+    hdr_subtitle:"AI-સંચાલિત યોજના સરળીકરણ", welcome_msg:"નમસ્તે! 🙏 હું SchemeSaathi છું, સરકારી કલ્યાણ યોજનાઓ માટે તમારો મફત AI માર્ગદર્શક. કોઈ પણ યોજના વિશે પૂછો. આજે હું તમને કેવી રીતે મદદ કરી શકું?",
+    key_benefit:"મુખ્ય લાભ", eligibility:"પાત્રતા", ai_explanation:"🤖 AI સરળીકૃત સ્પષ્ટીકરણ", official_site:"🔗 સત્તાવાર વેબસાઈટ →", simplifying:"તમારા માટે સરળ કરી રહ્યા છીએ..."
+  },
+  Malayalam: {
+    nav_search:"തിരയുക", nav_eligibility:"യോഗ്യത", nav_browse:"കാണുക", nav_chat:"AI ചോദിക്കുക",
+    hero_badge:"AI-ശക്തി · ഓരോ ഭാരതീയ പൗരനും",
+    hero_title:"ഓരോ സർക്കാർ ക്ഷേമ പദ്ധതിക്കും നിങ്ങളുടെ ഗൈഡ്",
+    hero_desc:"സർക്കാർ പദ്ധതികൾ ലളിതമായ ഭാഷയിൽ മനസ്സിലാക്കുക. യോഗ്യത പരിശോധിക്കുക, AI സഹായിയോട് സംസാരിക്കുക.",
+    stat_schemes:"പദ്ധതികൾ", stat_langs:"ഭാഷകൾ", stat_cats:"വിഭാഗങ്ങൾ", stat_free:"API Key ആവശ്യമില്ല",
+    search_title:"പദ്ധതികൾ തിരയുക", search_sub:"നിങ്ങൾ എന്ത് തിരയുന്നു എന്ന് പറയൂ — ഞങ്ങളുടെ AI പ്രസക്തമായ പദ്ധതികൾ കണ്ടെത്തും.",
+    search_label:"നിങ്ങൾ ഏത് തരം പദ്ധതി തിരയുന്നു?", search_placeholder:"ഉദാ. SC വിദ്യാർഥികൾക്ക് സ്കോളർഷിപ്പ്, BPL കുടുംബങ്ങൾക്ക് സൗജന്യ റേഷൻ...",
+    btn_search:"തിരയുക", chip_scholar:"പെൺകുട്ടി സ്കോളർഷിപ്പ്", chip_maternity:"മാതൃത്വ ആനുകൂല്യം",
+    elig_title:"നിങ്ങളുടെ യോഗ്യത പരിശോധിക്കുക", elig_sub:"നിങ്ങളുടെ വിവരങ്ങൾ നൽകൂ, ഞങ്ങളുടെ AI നിങ്ങൾക്ക് അർഹമായ പദ്ധതികൾ ശുപാർശ ചെയ്യും.",
+    personal_details:"വ്യക്തിഗത വിവരങ്ങൾ", residence_family:"താമസസ്ഥലവും കുടുംബവും",
+    lbl_age:"പ്രായം", lbl_gender:"ലിംഗം", lbl_category:"വിഭാഗം", lbl_income:"വാർഷിക കുടുംബ വരുമാനം (₹)",
+    lbl_occupation:"തൊഴിൽ", lbl_state:"സംസ്ഥാനം", lbl_residence:"താമസസ്ഥലത്തിന്റെ തരം",
+    lbl_marital:"വൈവാഹിക നില", lbl_education:"വിദ്യാഭ്യാസ നില", lbl_bpl:"BPL (ദാരിദ്ര്യരേഖക്ക് താഴെ) കാർഡ് ഉടമ",
+    btn_check_elig:"യോഗ്യത പരിശോധിക്കുക", btn_clear:"ഫോം മായ്ക്കുക",
+    opt_select:"തിരഞ്ഞെടുക്കുക", opt_select_cat:"വിഭാഗം തിരഞ്ഞെടുക്കുക", opt_select_range:"ശ്രേണി തിരഞ്ഞെടുക്കുക", opt_select_state:"സംസ്ഥാനം തിരഞ്ഞെടുക്കുക",
+    opt_male:"പുരുഷൻ", opt_female:"സ്ത്രീ", opt_trans:"ട്രാൻസ്‌ജെൻഡർ",
+    occ_farmer:"കർഷകൻ", occ_daily:"ദിവസക്കൂലി തൊഴിലാളി", occ_student:"വിദ്യാർഥി", occ_unemp:"തൊഴിൽരഹിതൻ",
+    occ_self:"സ്വയം തൊഴിൽ", occ_salaried:"ശമ്പള ജോലിക്കാരൻ", occ_senior:"മൂപ്പ് പൗരൻ", occ_disabled:"ഭിന്നശേഷിക്കാരൻ",
+    res_rural:"ഗ്രാമീണ", res_urban:"നഗര", res_semi:"അർദ്ധ-നഗര",
+    mar_single:"അവിവാഹിതൻ", mar_married:"വിവാഹിതൻ", mar_widow:"വിധവ/വിധുർ", mar_divorced:"വിവാഹ മോചിതൻ",
+    edu_none:"ഔദ്യോഗിക വിദ്യാഭ്യാസം ഇല്ല", edu_primary:"പ്രാഥമിക (1–5)", edu_secondary:"മാധ്യമിക (6–10)",
+    edu_higher:"ഉന്നത മാധ്യമിക (11–12)", edu_grad:"ബിരുദം", edu_postgrad:"ബിരുദാനന്തര",
+    browse_title:"എല്ലാ പദ്ധതികളും കാണുക", browse_sub:"വിഭാഗം അനുസരിച്ച് സർക്കാർ പദ്ധതികൾ പര്യവേക്ഷണം ചെയ്യുക.",
+    filter_all:"എല്ലാ പദ്ധതികൾ", filter_edu:"വിദ്യാഭ്യാസം", filter_health:"ആരോഗ്യം", filter_emp:"തൊഴിൽ",
+    filter_women:"സ്ത്രീകൾ", filter_farmer:"കർഷകർ", filter_housing:"ഭവനം",
+    chat_title:"SchemeSaathi AI-ത്തോട് ചോദിക്കുക", chat_sub:"ഏതെങ്കിലും സർക്കാർ പദ്ധതി, യോഗ്യത അല്ലെങ്കിൽ അപേക്ഷ പ്രക്രിയയെക്കുറിച്ച് ഞങ്ങളുടെ AI സഹായിയോട് സംസാരിക്കുക.",
+    chat_online:"● ഓൺലൈൻ · AI ശക്തി · സൗജന്യം", chat_placeholder:"ഏതെങ്കിലും സർക്കാർ പദ്ധതിയെക്കുറിച്ച് ചോദിക്കുക...",
+    learn_more:"കൂടുതൽ അറിയുക →", searching:"തിരയുന്നു...", checking:"പരിശോധിക്കുന്നു...",
+    finding_schemes:"പ്രസക്തമായ പദ്ധതികൾ കണ്ടെത്തുന്നു...", matching:"നിങ്ങളുടെ പ്രൊഫൈലുമായി പദ്ധതികൾ ഒത്തുനോക്കുന്നു...",
+    schemes_for:"പദ്ധതികൾ:", ai_simplified:"AI ലളിതമാക്കി", schemes_eligible:"നിങ്ങൾ അർഹനായ പദ്ധതികൾ",
+    personalized:"വ്യക്തിഗതമാക്കിയ ഫലങ്ങൾ", enter_query:"ദയവായി ഒരു തിരയൽ ചോദ്യം നൽകൂ",
+    fill_fields:"ദയവായി കുറഞ്ഞത് പ്രായം, ലിംഗം, വിഭാഗം, വരുമാനം എന്നിവ പൂരിപ്പിക്കൂ",
+    hdr_subtitle:"AI-ശക്തി പദ്ധതി ലളിതമാക്കൽ", welcome_msg:"നമസ്‌കാരം! 🙏 ഞാൻ SchemeSaathi ആണ്, സർക്കാർ ക്ഷേമ പദ്ധതികൾക്കായുള്ള നിങ്ങളുടെ സൗജന്യ AI ഗൈഡ്. ഏതെങ്കിലും പദ്ധതിയെക്കുറിച്ച് ചോദിക്കൂ. ഇന്ന് ഞാൻ നിങ്ങളെ എങ്ങനെ സഹായിക്കാം?",
+    key_benefit:"പ്രധാന ആനുകൂല്യം", eligibility:"യോഗ്യത", ai_explanation:"🤖 AI ലളിതമാക്കിയ വിശദീകരണം", official_site:"🔗 ഔദ്യോഗിക വെബ്സൈറ്റ് →", simplifying:"നിങ്ങൾക്കായി ലളിതമാക്കുന്നു..."
+  },
+  Punjabi: {
+    nav_search:"ਖੋਜੋ", nav_eligibility:"ਯੋਗਤਾ", nav_browse:"ਦੇਖੋ", nav_chat:"AI ਪੁੱਛੋ",
+    hero_badge:"AI-ਸੰਚਾਲਿਤ · ਹਰ ਭਾਰਤੀ ਨਾਗਰਿਕ ਲਈ",
+    hero_title:"ਹਰ ਸਰਕਾਰੀ ਭਲਾਈ ਯੋਜਨਾ ਲਈ ਤੁਹਾਡਾ ਮਾਰਗਦਰਸ਼ਕ",
+    hero_desc:"ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਨੂੰ ਸਰਲ ਭਾਸ਼ਾ ਵਿੱਚ ਸਮਝੋ। ਯੋਗਤਾ ਜਾਂਚੋ, AI ਸਹਾਇਕ ਨਾਲ ਗੱਲ ਕਰੋ।",
+    stat_schemes:"ਯੋਜਨਾਵਾਂ", stat_langs:"ਭਾਸ਼ਾਵਾਂ", stat_cats:"ਸ਼੍ਰੇਣੀਆਂ", stat_free:"API Key ਦੀ ਲੋੜ ਨਹੀਂ",
+    search_title:"ਯੋਜਨਾਵਾਂ ਖੋਜੋ", search_sub:"ਦੱਸੋ ਤੁਸੀਂ ਕੀ ਲੱਭ ਰਹੇ ਹੋ — ਸਾਡਾ AI ਢੁਕਵੀਆਂ ਯੋਜਨਾਵਾਂ ਲੱਭੇਗਾ।",
+    search_label:"ਤੁਸੀਂ ਕਿਸ ਕਿਸਮ ਦੀ ਯੋਜਨਾ ਲੱਭ ਰਹੇ ਹੋ?", search_placeholder:"ਜਿਵੇਂ SC ਵਿਦਿਆਰਥੀਆਂ ਲਈ ਵਜ਼ੀਫਾ, BPL ਪਰਿਵਾਰਾਂ ਲਈ ਮੁਫ਼ਤ ਰਾਸ਼ਨ...",
+    btn_search:"ਖੋਜੋ", chip_scholar:"ਲੜਕੀ ਵਜ਼ੀਫਾ", chip_maternity:"ਮਾਤਰਤਾ ਲਾਭ",
+    elig_title:"ਆਪਣੀ ਯੋਗਤਾ ਜਾਂਚੋ", elig_sub:"ਆਪਣੇ ਵੇਰਵੇ ਦਰਜ ਕਰੋ ਅਤੇ ਸਾਡਾ AI ਤੁਹਾਡੇ ਲਈ ਯੋਜਨਾਵਾਂ ਸਿਫ਼ਾਰਸ਼ ਕਰੇਗਾ।",
+    personal_details:"ਨਿੱਜੀ ਵੇਰਵੇ", residence_family:"ਰਿਹਾਇਸ਼ ਅਤੇ ਪਰਿਵਾਰ",
+    lbl_age:"ਉਮਰ", lbl_gender:"ਲਿੰਗ", lbl_category:"ਸ਼੍ਰੇਣੀ", lbl_income:"ਸਾਲਾਨਾ ਪਰਿਵਾਰਕ ਆਮਦਨ (₹)",
+    lbl_occupation:"ਕਿੱਤਾ", lbl_state:"ਰਾਜ", lbl_residence:"ਰਿਹਾਇਸ਼ ਕਿਸਮ",
+    lbl_marital:"ਵਿਆਹੁਤਾ ਸਥਿਤੀ", lbl_education:"ਸਿੱਖਿਆ ਪੱਧਰ", lbl_bpl:"BPL (ਗਰੀਬੀ ਰੇਖਾ ਤੋਂ ਹੇਠਾਂ) ਕਾਰਡ ਧਾਰਕ",
+    btn_check_elig:"ਯੋਗਤਾ ਜਾਂਚੋ", btn_clear:"ਫਾਰਮ ਸਾਫ਼ ਕਰੋ",
+    opt_select:"ਚੁਣੋ", opt_select_cat:"ਸ਼੍ਰੇਣੀ ਚੁਣੋ", opt_select_range:"ਸੀਮਾ ਚੁਣੋ", opt_select_state:"ਰਾਜ ਚੁਣੋ",
+    opt_male:"ਮਰਦ", opt_female:"ਔਰਤ", opt_trans:"ਟ੍ਰਾਂਸਜੈਂਡਰ",
+    occ_farmer:"ਕਿਸਾਨ", occ_daily:"ਰੋਜ਼ਾਨਾ ਮਜ਼ਦੂਰ", occ_student:"ਵਿਦਿਆਰਥੀ", occ_unemp:"ਬੇਰੁਜ਼ਗਾਰ",
+    occ_self:"ਸਵੈ-ਰੁਜ਼ਗਾਰ", occ_salaried:"ਤਨਖਾਹਦਾਰ", occ_senior:"ਬਜ਼ੁਰਗ ਨਾਗਰਿਕ", occ_disabled:"ਦਿਵਿਆਂਗ",
+    res_rural:"ਪੇਂਡੂ", res_urban:"ਸ਼ਹਿਰੀ", res_semi:"ਅਰਧ-ਸ਼ਹਿਰੀ",
+    mar_single:"ਅਵਿਆਹਿਆ", mar_married:"ਵਿਆਹਿਆ", mar_widow:"ਵਿਧਵਾ/ਵਿਧੁਰ", mar_divorced:"ਤਲਾਕਸ਼ੁਦਾ",
+    edu_none:"ਕੋਈ ਰਸਮੀ ਸਿੱਖਿਆ ਨਹੀਂ", edu_primary:"ਪ੍ਰਾਇਮਰੀ (1–5)", edu_secondary:"ਸੈਕੰਡਰੀ (6–10)",
+    edu_higher:"ਉੱਚ ਸੈਕੰਡਰੀ (11–12)", edu_grad:"ਗ੍ਰੈਜੂਏਟ", edu_postgrad:"ਪੋਸਟ ਗ੍ਰੈਜੂਏਟ",
+    browse_title:"ਸਾਰੀਆਂ ਯੋਜਨਾਵਾਂ ਦੇਖੋ", browse_sub:"ਸ਼੍ਰੇਣੀ ਅਨੁਸਾਰ ਸਰਕਾਰੀ ਯੋਜਨਾਵਾਂ ਦੀ ਪੜਚੋਲ ਕਰੋ।",
+    filter_all:"ਸਾਰੀਆਂ ਯੋਜਨਾਵਾਂ", filter_edu:"ਸਿੱਖਿਆ", filter_health:"ਸਿਹਤ", filter_emp:"ਰੁਜ਼ਗਾਰ",
+    filter_women:"ਔਰਤਾਂ", filter_farmer:"ਕਿਸਾਨ", filter_housing:"ਰਿਹਾਇਸ਼",
+    chat_title:"SchemeSaathi AI ਤੋਂ ਪੁੱਛੋ", chat_sub:"ਕਿਸੇ ਵੀ ਸਰਕਾਰੀ ਯੋਜਨਾ, ਯੋਗਤਾ ਜਾਂ ਅਰਜ਼ੀ ਪ੍ਰਕਿਰਿਆ ਬਾਰੇ ਸਾਡੇ AI ਸਹਾਇਕ ਨਾਲ ਗੱਲ ਕਰੋ।",
+    chat_online:"● ਔਨਲਾਈਨ · AI ਸੰਚਾਲਿਤ · ਮੁਫ਼ਤ", chat_placeholder:"ਕਿਸੇ ਵੀ ਸਰਕਾਰੀ ਯੋਜਨਾ ਬਾਰੇ ਪੁੱਛੋ...",
+    learn_more:"ਹੋਰ ਜਾਣੋ →", searching:"ਖੋਜ ਰਹੇ ਹਾਂ...", checking:"ਜਾਂਚ ਰਹੇ ਹਾਂ...",
+    finding_schemes:"ਸੰਬੰਧਿਤ ਯੋਜਨਾਵਾਂ ਲੱਭ ਰਹੇ ਹਾਂ...", matching:"ਤੁਹਾਡੀ ਪ੍ਰੋਫਾਈਲ ਨਾਲ ਯੋਜਨਾਵਾਂ ਮਿਲਾ ਰਹੇ ਹਾਂ...",
+    schemes_for:"ਯੋਜਨਾਵਾਂ:", ai_simplified:"AI ਸਰਲੀਕ੍ਰਿਤ", schemes_eligible:"ਤੁਸੀਂ ਯੋਗ ਯੋਜਨਾਵਾਂ",
+    personalized:"ਨਿੱਜੀਕ੍ਰਿਤ ਨਤੀਜੇ", enter_query:"ਕਿਰਪਾ ਕਰਕੇ ਖੋਜ ਸਵਾਲ ਦਰਜ ਕਰੋ",
+    fill_fields:"ਕਿਰਪਾ ਕਰਕੇ ਘੱਟੋ-ਘੱਟ ਉਮਰ, ਲਿੰਗ, ਸ਼੍ਰੇਣੀ ਅਤੇ ਆਮਦਨ ਭਰੋ",
+    hdr_subtitle:"AI-ਸੰਚਾਲਿਤ ਯੋਜਨਾ ਸਰਲੀਕਰਨ", welcome_msg:"ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! 🙏 ਮੈਂ SchemeSaathi ਹਾਂ, ਸਰਕਾਰੀ ਭਲਾਈ ਯੋਜਨਾਵਾਂ ਲਈ ਤੁਹਾਡਾ ਮੁਫ਼ਤ AI ਮਾਰਗਦਰਸ਼ਕ। ਕਿਸੇ ਵੀ ਯੋਜਨਾ ਬਾਰੇ ਪੁੱਛੋ। ਅੱਜ ਮੈਂ ਤੁਹਾਡੀ ਕਿਵੇਂ ਮਦਦ ਕਰ ਸਕਦਾ ਹਾਂ?",
+    key_benefit:"ਮੁੱਖ ਲਾਭ", eligibility:"ਯੋਗਤਾ", ai_explanation:"🤖 AI ਸਰਲੀਕ੍ਰਿਤ ਵਿਆਖਿਆ", official_site:"🔗 ਅਧਿਕਾਰਤ ਵੈੱਬਸਾਈਟ →", simplifying:"ਤੁਹਾਡੇ ਲਈ ਸਰਲ ਕਰ ਰਹੇ ਹਾਂ..."
+  },
+  Odia: {
+    nav_search:"ଖୋଜ", nav_eligibility:"ଯୋଗ୍ୟତା", nav_browse:"ଦେଖ", nav_chat:"AI ପଚାର",
+    hero_badge:"AI-ଚାଳିତ · ପ୍ରତ୍ୟେକ ଭାରତୀୟ ନାଗରିକ ପାଇଁ",
+    hero_title:"ପ୍ରତ୍ୟେକ ସରକାରୀ କଲ୍ୟାଣ ଯୋଜନା ପାଇଁ ଆପଣଙ୍କ ଗାଇଡ",
+    hero_desc:"ସରଳ ଭାଷାରେ ସରକାରୀ ଯୋଜନା ବୁଝନ୍ତୁ। ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ, AI ସହାୟକ ସହ କଥା ହୁଅନ୍ତୁ।",
+    stat_schemes:"ଯୋଜନା", stat_langs:"ଭାଷା", stat_cats:"ବର୍ଗ", stat_free:"API Key ଆବଶ୍ୟକ ନାହିଁ",
+    search_title:"ଯୋଜନା ଖୋଜ", search_sub:"ଆପଣ କ'ଣ ଖୋଜୁଛନ୍ତି ତାହା ଜଣାନ୍ତୁ — ଆମର AI ସଂଶ୍ଳିଷ୍ଟ ଯୋଜନା ଖୋଜିବ।",
+    search_label:"ଆପଣ କେଉଁ ଧରଣର ଯୋଜନା ଖୋଜୁଛନ୍ତି?", search_placeholder:"ଯଥା SC ଛାତ୍ର ପାଇଁ ବୃତ୍ତି, BPL ପରିବାର ପାଇଁ ମାଗଣା ରେସନ...",
+    btn_search:"ଖୋଜ", chip_scholar:"ବାଳିକା ବୃତ୍ତି", chip_maternity:"ମାତୃତ୍ୱ ସୁବିଧା",
+    elig_title:"ଆପଣଙ୍କ ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ", elig_sub:"ଆପଣଙ୍କ ବିବରଣୀ ଦିଅନ୍ତୁ ଏବଂ ଆମର AI ଆପଣଙ୍କ ପାଇଁ ଯୋଜନା ସୁପାରିଶ କରିବ।",
+    personal_details:"ବ୍ୟକ୍ତିଗତ ବିବରଣୀ", residence_family:"ବାସସ୍ଥାନ ଏବଂ ପରିବାର",
+    lbl_age:"ବୟସ", lbl_gender:"ଲିଙ୍ଗ", lbl_category:"ବର୍ଗ", lbl_income:"ବାର୍ଷିକ ପାରିବାରିକ ଆୟ (₹)",
+    lbl_occupation:"ବୃତ୍ତି", lbl_state:"ରାଜ୍ୟ", lbl_residence:"ବାସସ୍ଥାନ ଧରଣ",
+    lbl_marital:"ବୈବାହିକ ସ୍ଥିତି", lbl_education:"ଶିକ୍ଷା ସ୍ତର", lbl_bpl:"BPL (ଦାରିଦ୍ର୍ୟ ସୀମା ତଳେ) କାର୍ଡ ଧାରକ",
+    btn_check_elig:"ଯୋଗ୍ୟତା ଯାଞ୍ଚ କରନ୍ତୁ", btn_clear:"ଫର୍ମ ସଫା କରନ୍ତୁ",
+    opt_select:"ବାଛନ୍ତୁ", opt_select_cat:"ବର୍ଗ ବାଛନ୍ତୁ", opt_select_range:"ସୀମା ବାଛନ୍ତୁ", opt_select_state:"ରାଜ୍ୟ ବାଛନ୍ତୁ",
+    opt_male:"ପୁରୁଷ", opt_female:"ମହିଳା", opt_trans:"ତୃତୀୟ ଲିଙ୍ଗ",
+    occ_farmer:"କୃଷକ", occ_daily:"ଦୈନିକ ଶ୍ରମିକ", occ_student:"ଛାତ୍ର", occ_unemp:"ବେରୋଜଗାର",
+    occ_self:"ସ୍ୱ-ନିୟୋଜିତ", occ_salaried:"ବେତନଭୋଗୀ", occ_senior:"ବରିଷ୍ଠ ନାଗରିକ", occ_disabled:"ଦିବ୍ୟାଙ୍ଗ",
+    res_rural:"ଗ୍ରାମୀଣ", res_urban:"ସହରୀ", res_semi:"ଅର୍ଧ-ସହରୀ",
+    mar_single:"ଅବିବାହିତ", mar_married:"ବିବାହିତ", mar_widow:"ବିଧବା/ବିଧୁର", mar_divorced:"ବିଚ୍ଛେଦ",
+    edu_none:"କୌଣସି ଔପଚାରିକ ଶିକ୍ଷା ନାହିଁ", edu_primary:"ପ୍ରାଥମିକ (1–5)", edu_secondary:"ମାଧ୍ୟମିକ (6–10)",
+    edu_higher:"ଉଚ୍ଚ ମାଧ୍ୟମିକ (11–12)", edu_grad:"ସ୍ନାତକ", edu_postgrad:"ସ୍ନାତକୋତ୍ତର",
+    browse_title:"ସମସ୍ତ ଯୋଜନା ଦେଖ", browse_sub:"ବର୍ଗ ଅନୁସାରେ ସରକାରୀ ଯୋଜନା ଅନ୍ୱେଷଣ କରନ୍ତୁ।",
+    filter_all:"ସମସ୍ତ ଯୋଜନା", filter_edu:"ଶିକ୍ଷା", filter_health:"ସ୍ୱାସ୍ଥ୍ୟ", filter_emp:"ନିଯୁକ୍ତି",
+    filter_women:"ମହିଳା", filter_farmer:"କୃଷକ", filter_housing:"ଗୃହ",
+    chat_title:"SchemeSaathi AI ଙ୍କୁ ପଚାରନ୍ତୁ", chat_sub:"ଯେ କୌଣସି ସରକାରୀ ଯୋଜନା, ଯୋଗ୍ୟତା ବା ଆବେଦନ ପ୍ରକ୍ରିୟା ବିଷୟରେ ଆମର AI ସହ ବୁଝନ୍ତୁ।",
+    chat_online:"● ଅନ୍‌ଲାଇନ୍ · AI ଚାଳିତ · ମାଗଣା", chat_placeholder:"ଯେ କୌଣସି ସରକାରୀ ଯୋଜନା ବିଷୟରେ ପଚାରନ୍ତୁ...",
+    learn_more:"ଅଧିକ ଜାଣ →", searching:"ଖୋଜୁଛୁ...", checking:"ଯାଞ୍ଚ କରୁଛୁ...",
+    finding_schemes:"ସଂଶ୍ଳିଷ୍ଟ ଯୋଜନା ଖୋଜୁଛୁ...", matching:"ଆପଣଙ୍କ ପ୍ରୋଫାଇଲ ସହ ଯୋଜନା ମିଳାଉଛୁ...",
+    schemes_for:"ଯୋଜନା:", ai_simplified:"AI ସରଳୀକୃତ", schemes_eligible:"ଆପଣ ଯୋଗ୍ୟ ଯୋଜନା",
+    personalized:"ବ୍ୟକ୍ତିଗତ ଫଳ", enter_query:"ଦୟାକରି ଏକ ଖୋଜ ପ୍ରଶ୍ନ ଦିଅନ୍ତୁ",
+    fill_fields:"ଦୟାକରି ଅନ୍ତତ ବୟସ, ଲିଙ୍ଗ, ବର୍ଗ ଏବଂ ଆୟ ପୂରଣ କରନ୍ତୁ",
+    hdr_subtitle:"AI-ଚାଳିତ ଯୋଜନା ସରଳୀକରଣ", welcome_msg:"ନମସ୍କାର! 🙏 ମୁଁ SchemeSaathi, ସରକାରୀ କଲ୍ୟାଣ ଯୋଜନା ପାଇଁ ଆପଣଙ୍କ ମାଗଣା AI ଗାଇଡ। ଯେ କୌଣସି ଯୋଜନା ବିଷୟରେ ପଚାରନ୍ତୁ। ଆଜି ମୁଁ ଆପଣଙ୍କୁ କିପରି ସାହାଯ୍ୟ କରିପାରିବି?",
+    key_benefit:"ମୁଖ୍ୟ ସୁବିଧା", eligibility:"ଯୋଗ୍ୟତା", ai_explanation:"🤖 AI ସରଳୀକୃତ ବ୍ୟାଖ୍ୟା", official_site:"🔗 ଅଧିକୃତ ୱେବସାଇଟ →", simplifying:"ଆପଣଙ୍କ ପାଇଁ ସରଳ କରୁଛୁ..."
+  },
+  Urdu: {
+    nav_search:"تلاش کریں", nav_eligibility:"اہلیت", nav_browse:"دیکھیں", nav_chat:"AI سے پوچھیں",
+    hero_badge:"AI-سنچالت · ہر ہندوستانی شہری کے لیے",
+    hero_title:"ہر حکومتی فلاحی اسکیم کے لیے آپ کا رہنما",
+    hero_desc:"سرکاری اسکیموں کو آسان زبان میں سمجھیں۔ اہلیت جانچیں، AI مددگار سے بات کریں۔",
+    stat_schemes:"اسکیمیں", stat_langs:"زبانیں", stat_cats:"زمرے", stat_free:"API Key کی ضرورت نہیں",
+    search_title:"اسکیمیں تلاش کریں", search_sub:"بتائیں آپ کیا ڈھونڈ رہے ہیں — ہمارا AI متعلقہ اسکیمیں تلاش کرے گا۔",
+    search_label:"آپ کس قسم کی اسکیم تلاش کر رہے ہیں؟", search_placeholder:"مثلاً SC طالب علموں کے لیے وظیفہ، BPL خاندانوں کے لیے مفت راشن...",
+    btn_search:"تلاش کریں", chip_scholar:"لڑکی کا وظیفہ", chip_maternity:"زچگی فائدہ",
+    elig_title:"اپنی اہلیت جانچیں", elig_sub:"اپنی تفصیلات درج کریں اور ہمارا AI آپ کے لیے اسکیمیں تجویز کرے گا۔",
+    personal_details:"ذاتی تفصیلات", residence_family:"رہائش اور خاندان",
+    lbl_age:"عمر", lbl_gender:"جنس", lbl_category:"زمرہ", lbl_income:"سالانہ خاندانی آمدنی (₹)",
+    lbl_occupation:"پیشہ", lbl_state:"ریاست", lbl_residence:"رہائش کی قسم",
+    lbl_marital:"ازدواجی حیثیت", lbl_education:"تعلیمی سطح", lbl_bpl:"BPL (غربت کی لکیر سے نیچے) کارڈ ہولڈر",
+    btn_check_elig:"اہلیت جانچیں", btn_clear:"فارم صاف کریں",
+    opt_select:"منتخب کریں", opt_select_cat:"زمرہ منتخب کریں", opt_select_range:"حد منتخب کریں", opt_select_state:"ریاست منتخب کریں",
+    opt_male:"مرد", opt_female:"عورت", opt_trans:"ٹرانسجینڈر",
+    occ_farmer:"کسان", occ_daily:"یومیہ مزدور", occ_student:"طالب علم", occ_unemp:"بے روزگار",
+    occ_self:"خود روزگار", occ_salaried:"تنخواہ دار", occ_senior:"بزرگ شہری", occ_disabled:"معذور",
+    res_rural:"دیہی", res_urban:"شہری", res_semi:"نیم شہری",
+    mar_single:"غیر شادی شدہ", mar_married:"شادی شدہ", mar_widow:"بیوہ/رنڈوا", mar_divorced:"طلاق یافتہ",
+    edu_none:"کوئی رسمی تعلیم نہیں", edu_primary:"ابتدائی (1–5)", edu_secondary:"ثانوی (6–10)",
+    edu_higher:"اعلیٰ ثانوی (11–12)", edu_grad:"گریجویٹ", edu_postgrad:"پوسٹ گریجویٹ",
+    browse_title:"تمام اسکیمیں دیکھیں", browse_sub:"زمرہ کے مطابق سرکاری اسکیمیں دیکھیں۔",
+    filter_all:"تمام اسکیمیں", filter_edu:"تعلیم", filter_health:"صحت", filter_emp:"روزگار",
+    filter_women:"خواتین", filter_farmer:"کسان", filter_housing:"رہائش",
+    chat_title:"SchemeSaathi AI سے پوچھیں", chat_sub:"کسی بھی سرکاری اسکیم، اہلیت یا درخواست کے عمل کے بارے میں ہمارے AI مددگار سے بات کریں۔",
+    chat_online:"● آن لائن · AI سنچالت · مفت", chat_placeholder:"کسی بھی سرکاری اسکیم کے بارے میں پوچھیں...",
+    learn_more:"مزید جانیں →", searching:"تلاش کر رہے ہیں...", checking:"جانچ رہے ہیں...",
+    finding_schemes:"متعلقہ اسکیمیں تلاش کی جا رہی ہیں...", matching:"آپ کے پروفائل سے اسکیمیں ملا رہے ہیں...",
+    schemes_for:"اسکیمیں:", ai_simplified:"AI آسان", schemes_eligible:"آپ اہل اسکیمیں",
+    personalized:"ذاتی نتائج", enter_query:"براہ کرم تلاش کی درخواست درج کریں",
+    fill_fields:"براہ کرم کم از کم عمر، جنس، زمرہ اور آمدنی بھریں",
+    hdr_subtitle:"AI-سنچالت اسکیم سادہ کاری", welcome_msg:"السلام علیکم! 🙏 میں SchemeSaathi ہوں، سرکاری فلاحی اسکیموں کے لیے آپ کا مفت AI رہنما۔ کسی بھی اسکیم کے بارے میں پوچھیں۔ آج میں آپ کی کیسے مدد کر سکتا ہوں؟",
+    key_benefit:"اہم فائدہ", eligibility:"اہلیت", ai_explanation:"🤖 AI آسان وضاحت", official_site:"🔗 سرکاری ویب سائٹ →", simplifying:"آپ کے لیے آسان کر رہے ہیں..."
+  }
+};
+
+// ─── STATE ───
+let currentLang = 'English';
+let chatHistory = [];
+
+function t(key) {
+  return (TRANSLATIONS[currentLang] && TRANSLATIONS[currentLang][key]) || (TRANSLATIONS['English'] && TRANSLATIONS['English'][key]) || key;
+}
+
+function changeLanguage(lang) {
+  currentLang = lang;
+  applyTranslations();
+  // Update chat welcome message
+  document.getElementById('welcomeMsg').textContent = t('welcome_msg');
+  // Re-render schemes if browse is active
+  if (document.getElementById('panel-browse').classList.contains('active')) renderSchemes('all');
+}
+
+function applyTranslations() {
+  // All [data-t] elements
+  document.querySelectorAll('[data-t]').forEach(el => {
+    const key = el.getAttribute('data-t');
+    el.textContent = t(key);
+  });
+  // Placeholders
+  document.querySelectorAll('[data-ph]').forEach(el => {
+    const key = el.getAttribute('data-ph');
+    el.placeholder = t(key);
+  });
+  // Header subtitle
+  document.getElementById('hdr-subtitle').textContent = t('hdr_subtitle');
+}
+
+// ─── FLASK BACKEND BASE URL ───
+// Fix 1: Auto-detect: use relative URL when deployed (Render/production), localhost in dev
+const BACKEND = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? "http://localhost:5000"
+  : window.location.origin;
+
+// ─── PANELS ───
+function switchPanel(name, el) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (el) el.classList.add('active');
+  if (name === 'browse') loadAndRenderSchemes();
+}
+
+// ─── SEARCH (calls Flask /api/search) ───
+async function searchSchemes() {
+  const query = document.getElementById('searchQuery').value.trim();
+  if (!query) { showToast('⚠️ ' + t('enter_query')); return; }
+  const btn = document.getElementById('searchBtn');
+  btn.disabled = true; btn.innerHTML = '⏳ ' + t('searching');
+  const area = document.getElementById('searchResult');
+  area.innerHTML = `<div class="result-card"><div class="loading-state"><div class="spinner"></div><p>${t('finding_schemes')}</p></div></div>`;
+  try {
+    const res = await fetch(`${BACKEND}/api/search`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, lang: currentLang, top_n: 4 })
+    });
+    const data = await res.json();
+    if (!data.success || !data.results || data.results.length === 0) {
+      area.innerHTML = `<div class="result-card"><div class="result-card-body"><p>❌ No schemes found for "<b>${query}</b>". Try: farmer, health, education, housing, women, employment.</p></div></div>`;
+    } else {
+      let html = '';
+      for (const s of data.results) {
+        let explanation = s.explanation;
+        if (currentLang !== 'English') explanation = await translateReply(explanation, currentLang);
+        html += `<div class="result-card" style="margin-bottom:16px;">
+          <div class="result-card-header">
+            <span style="font-size:20px">${catEmoji(s.cat)}</span>
+            <h3>${s.full}</h3>
+            <span class="badge-cat">${s.cat} · Score: ${(s.score*100).toFixed(0)}%</span>
+          </div>
+          <div class="result-card-body">
+            <p style="white-space:pre-line;">${explanation}</p>
+          </div>
+        </div>`;
+      }
+      area.innerHTML = `<div style="margin-bottom:10px;font-size:13px;color:var(--gray-600);">🔎 Found <b>${data.results.length}</b> schemes for "<b>${query}</b>" · ML-Powered · No API Key</div>` + html;
+    }
+  } catch(e) {
+    area.innerHTML = `<div class="result-card"><div class="result-card-body"><p style="color:red">⚠️ Cannot connect to backend. Make sure <b>app.py</b> is running on port 5000.<br/><code>python app.py</code></p></div></div>`;
+  }
+  btn.disabled = false; btn.innerHTML = '🔍 ' + t('btn_search');
+}
+
+function quickSearch(q) {
+  document.getElementById('searchQuery').value = q;
+  switchPanel('search', document.getElementById('tab-search'));
+  searchSchemes();
+}
+
+// ─── ELIGIBILITY (calls Flask /api/eligibility) ───
+async function checkEligibility() {
+  const ageRaw = document.getElementById('elig_age').value.trim();
+  const gender = document.getElementById('elig_gender').value;
+  const category = document.getElementById('elig_category').value;
+  const income = document.getElementById('elig_income').value;
+
+  // ── Fix 5: Strict validation ──
+  const errors = [];
+  if (!ageRaw) { errors.push('Age is required'); markInvalid('elig_age'); }
+  else {
+    const ageNum = parseInt(ageRaw);
+    if (isNaN(ageNum) || ageNum < 1 || ageNum > 120) {
+      errors.push('Age must be between 1 and 120'); markInvalid('elig_age');
+    } else { markValid('elig_age'); }
+  }
+  if (!gender) { errors.push('Gender is required'); markInvalid('elig_gender'); } else { markValid('elig_gender'); }
+  if (!category) { errors.push('Category is required'); markInvalid('elig_category'); } else { markValid('elig_category'); }
+  if (!income) { errors.push('Income range is required'); markInvalid('elig_income'); } else { markValid('elig_income'); }
+
+  if (errors.length > 0) {
+    showToast('⚠️ ' + errors[0]);
+    return;
+  }
+  const age = ageRaw;
+  const occ = document.getElementById('elig_occupation').value;
+  const state = document.getElementById('elig_state').value;
+  const res = document.getElementById('elig_residence').value;
+  const marital = document.getElementById('elig_marital').value;
+  const edu = document.getElementById('elig_education').value;
+  const bpl = document.getElementById('elig_bpl').checked;
+  const btn = document.getElementById('eligBtn');
+  btn.disabled = true; btn.innerHTML = '⏳ ' + t('checking');
+  const area = document.getElementById('eligResult');
+  area.innerHTML = `<div class="result-card"><div class="loading-state"><div class="spinner"></div><p>${t('matching')}</p></div></div>`;
+  try {
+    const res2 = await fetch(`${BACKEND}/api/eligibility`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ age: parseInt(age), gender, category, income, occupation: occ, state, residence: res, marital, education: edu, bpl })
+    });
+    const data = await res2.json();
+    if (!data.success) throw new Error(data.error || "Backend error");
+    let eligExpl = data.explanation;
+    if (currentLang !== 'English') eligExpl = await translateReply(eligExpl, currentLang);
+    area.innerHTML = `<div class="result-card">
+      <div class="result-card-header">
+        <span style="font-size:20px">✅</span>
+        <h3>${t('schemes_eligible')} (${data.eligible_count})</h3>
+        <span class="badge-cat">${t('personalized')} · ML Powered</span>
+      </div>
+      <div class="result-card-body">
+        <p style="white-space:pre-line;">${eligExpl}</p>
+      </div>
+    </div>`;
+  } catch(e) {
+    area.innerHTML = `<div class="result-card"><div class="result-card-body"><p style="color:red">⚠️ Cannot connect to backend. Make sure <b>app.py</b> is running.<br/><code>python app.py</code></p></div></div>`;
+  }
+  btn.disabled = false; btn.innerHTML = '✅ ' + t('btn_check_elig');
+}
+
+function markInvalid(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.borderColor = '#DC2626'; el.style.background = '#FEF2F2'; }
+}
+function markValid(id) {
+  const el = document.getElementById(id);
+  if (el) { el.style.borderColor = ''; el.style.background = ''; }
+}
+
+function clearEligibility() {
+  ['elig_age','elig_gender','elig_category','elig_income','elig_occupation','elig_state','elig_residence','elig_marital','elig_education'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) { el.value = ''; el.style.borderColor = ''; el.style.background = ''; }
+  });
+  document.getElementById('elig_bpl').checked = false;
+  document.getElementById('eligResult').innerHTML = '';
+}
+
+// ─── BROWSE (loads from Flask /api/schemes) ───
+let ALL_SCHEMES_LOADED = [];
+
+async function loadAndRenderSchemes() {
+  const grid = document.getElementById('schemeGrid');
+  if (ALL_SCHEMES_LOADED.length > 0) { renderSchemes('all'); return; }
+  grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;"><div class="spinner" style="margin:0 auto 12px;"></div><p>Loading schemes from ML backend...</p></div>`;
+  try {
+    const res = await fetch(`${BACKEND}/api/schemes`);
+    const data = await res.json();
+    ALL_SCHEMES_LOADED = data.schemes || [];
+    renderSchemes('all');
+  } catch(e) {
+    grid.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:red;">⚠️ Cannot connect to backend.<br/>Run <code>python app.py</code> first.</div>`;
+  }
+}
+
+function renderSchemes(filter) {
+  const grid = document.getElementById('schemeGrid');
+  const schemes = ALL_SCHEMES_LOADED.length > 0 ? ALL_SCHEMES_LOADED : (window.SCHEMES || []);
+  const list = filter === 'all' ? schemes : schemes.filter(s => s.cat === filter);
+  if (list.length === 0) { grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--gray-400);">No schemes found.</div>`; return; }
+  grid.innerHTML = list.map(s => `
+    <div class="scheme-card" onclick="openSchemeModal(${s.id})">
+      <div class="scheme-card-top ${s.cat}"></div>
+      <div class="scheme-card-content">
+        <div class="scheme-cat-badge ${s.cat}">${catEmoji(s.cat)} ${capitalize(s.cat)}</div>
+        <h4 data-dyn="1" data-orig="${esc(s.full)}">${s.full}</h4>
+        <p data-dyn="1" data-orig="${esc(s.desc.substring(0,90))}...">${s.desc.substring(0,90)}...</p>
+        <div class="scheme-card-footer">
+          <span class="scheme-tag">🏛️ ${s.ministry.split('&')[0].trim()}</span>
+          <button class="scheme-detail-btn">${t('learn_more')}</button>
+        </div>
+      </div>
+    </div>`).join('');
+  translateDynamicContainer(grid);
+}
+
+function filterSchemes(filter, el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderSchemes(filter);
+}
+
+function catEmoji(cat) {
+  return {education:'📚',health:'🏥',employment:'💼',women:'👩',farmer:'🌾',housing:'🏠',social:'🛡️'}[cat] || '📋';
+}
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ─── MODAL (calls Flask /api/scheme/:id) ───
+async function openSchemeModal(id) {
+  const schemes = ALL_SCHEMES_LOADED.length > 0 ? ALL_SCHEMES_LOADED : (window.SCHEMES || []);
+  const s = schemes.find(x => x.id === id);
+  if (!s) return;
+  const title = currentLang !== 'English' ? await translateText(s.full, currentLang) : s.full;
+  const benefit = currentLang !== 'English' ? await translateText(s.benefit, currentLang) : s.benefit;
+  const eligTxt = currentLang !== 'English' ? await translateText(s.eligibility, currentLang) : s.eligibility;
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalSubtitle').textContent = s.ministry + ' · ' + capitalize(s.cat);
+  document.getElementById('modalBody').innerHTML = `
+    <div class="info-grid">
+      <div class="info-box"><div class="info-lbl">${t('key_benefit')}</div><div class="info-val">${benefit}</div></div>
+      <div class="info-box"><div class="info-lbl">${t('eligibility')}</div><div class="info-val">${eligTxt}</div></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+      <div style="font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--saffron);">${t('ai_explanation')}</div>
+      <button class="btn btn-outline" style="padding:5px 12px;font-size:12px;" onclick="speakModalExplanation()">🔊 ${t('listen')}</button>
+    </div>
+    <div id="modalAI" style="font-size:14px;line-height:1.75;color:var(--gray-800);background:var(--gray-100);padding:18px;border-radius:10px;">
+      <div class="loading-state" style="padding:24px 0;"><div class="spinner"></div><p>${t('simplifying')}</p></div>
+    </div>
+    ${s.link ? `<div style="margin-top:16px;"><a href="${s.link}" target="_blank" style="color:var(--saffron);font-size:13px;font-weight:600;text-decoration:none;">${t('official_site')}</a></div>` : ''}`;
+  document.getElementById('modalOverlay').style.display = 'flex';
+  try {
+    const res = await fetch(`${BACKEND}/api/scheme/${id}`);
+    const data = await res.json();
+    if (data.success && data.scheme.explanation) {
+      let explanation = data.scheme.explanation;
+      if (currentLang !== 'English') explanation = await translateReply(explanation, currentLang);
+      document.getElementById('modalAI').innerHTML = `<p style="white-space:pre-line;">${explanation}</p>`;
+      document.getElementById('modalAI').setAttribute('data-speak-text', explanation);
+    }
+  } catch(e) {
+    document.getElementById('modalAI').innerHTML = `<p style="color:red">⚠️ Backend not reachable. Run <code>python app.py</code></p>`;
+  }
+}
+
+function speakModalExplanation() {
+  const el = document.getElementById('modalAI');
+  const text = el?.getAttribute('data-speak-text') || el?.textContent;
+  if (!text || !('speechSynthesis' in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const code = LANG_CODE[currentLang] || 'en';
+  u.lang = code === 'en' ? 'en-IN' : `${code}-IN`;
+  const voices = window.speechSynthesis.getVoices();
+  const match = voices.find(v => v.lang.startsWith(code));
+  if (match) u.voice = match;
+  window.speechSynthesis.speak(u);
+}
+
+function closeModal(e) { if (e.target === document.getElementById('modalOverlay')) closeModalDirect(); }
+function closeModalDirect() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+// ─── Fix 4: TRANSLATION via Anthropic API ───
+const LANG_CODES = {
+  Hindi:'hi', Tamil:'ta', Telugu:'te', Kannada:'kn', Bengali:'bn',
+  Marathi:'mr', Gujarati:'gu', Malayalam:'ml', Punjabi:'pa', Odia:'or', Urdu:'ur'
+};
+
+async function translateReply(text, targetLang) {
+  // Uses the free MyMemory translation API (see translateText() below) —
+  // previously this tried to call api.anthropic.com directly from the
+  // browser with no API key, which always failed silently and fell back
+  // to English. That's why only static headings were translating before.
+  return translateText(text, targetLang);
+}
+
+// ─── CHAT (calls Flask /api/chat) ───
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgsDiv = document.getElementById('chatMessages');
+  input.value = '';
+  document.getElementById('chatSendBtn').disabled = true;
+  msgsDiv.innerHTML += `<div class="msg user"><div class="msg-avatar user">👤</div><div class="msg-bubble">${esc(msg)}</div></div>`;
+  chatHistory.push({ role: "user", content: msg });
+  msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
+  const bid = 'bot' + Date.now();
+  msgsDiv.innerHTML += `<div class="msg bot" id="${bid}"><div class="msg-avatar bot">🪷</div><div class="msg-bubble" id="${bid}t"><div class="loading-state" style="padding:6px 0 2px;gap:8px;flex-direction:row;"><div class="spinner" style="width:18px;height:18px;border-width:2px;"></div><span style="font-size:13px;color:var(--gray-600);">${t('searching')}</span></div></div></div>`;
+  msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
+  try {
+    const res = await fetch(`${BACKEND}/api/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: msg, lang: currentLang, history: chatHistory.slice(-10) })
+    });
+    const data = await res.json();
+    let reply = data.success ? data.response : ('⚠️ ' + (data.error || 'Error'));
+    // Fix 4: translate reply if non-English is selected
+    if (currentLang !== 'English' && data.success) {
+      reply = await translateReply(reply, currentLang);
+    }
+    chatHistory.push({ role: "assistant", content: reply });
+    document.getElementById(bid + 't').innerHTML = reply.replace(/\n/g,'<br/>');
+    // show intent badge
+    if (data.intent) {
+      document.getElementById(bid + 't').innerHTML += `<br/><span style="font-size:10px;color:var(--gray-400);margin-top:4px;display:inline-block;">🤖 Intent: ${data.intent} (${(data.confidence*100).toFixed(0)}%)</span>`;
+    }
+  } catch(e) {
+    document.getElementById(bid + 't').innerHTML = '⚠️ Cannot connect to backend. Run <code>python app.py</code>';
+  }
+  document.getElementById('chatSendBtn').disabled = false;
+  msgsDiv.scrollTop = msgsDiv.scrollHeight;
+}
+
+function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── VOICE GUIDE ───
+const VOICE_SCRIPTS = {
+  pm_kisan: `PM Kisan Samman Nidhi\n\nWhat is this scheme?\nPradhan Mantri Kisan Samman Nidhi, also called PM-KISAN, is a central government scheme that gives direct financial help to farmers. Under this scheme, every eligible farmer family receives six thousand rupees per year, sent directly to their bank account in three equal payments of two thousand rupees each.\n\nWho can apply?\nSmall and marginal farmers who own less than two hectares of land are eligible. The farmer must be an Indian citizen and should have a bank account linked to Aadhaar.\n\nHow to apply?\nStep 1 — Visit the official website pmkisan.gov.in or your nearest Common Service Centre.\nStep 2 — Register yourself with your Aadhaar number, bank account, and land records.\nStep 3 — Your application will be verified by state officials.\nStep 4 — Once approved, money will be credited to your bank account automatically.\n\nDocuments needed — Aadhaar Card, Bank Passbook, Land Ownership Papers, and Passport Size Photo.`,
+
+  ayushman: `Ayushman Bharat — PM Jan Arogya Yojana\n\nWhat is this scheme?\nAyushman Bharat, also known as PM-JAY or Pradhan Mantri Jan Arogya Yojana, is the world's largest health insurance scheme. It provides a health cover of five lakh rupees per family per year for secondary and tertiary care hospitalization.\n\nWho can apply?\nFamilies listed in the Socio-Economic Caste Census data, particularly belonging to economically weaker sections. BPL families and those without health insurance are prioritized.\n\nHow to apply?\nStep 1 — Visit pmjay.gov.in to check if your family is eligible using your ration card or mobile number.\nStep 2 — Get your Ayushman card made at the nearest CSC or government hospital.\nStep 3 — Show your card at any empanelled hospital for cashless treatment.\n\nDocuments needed — Aadhaar Card, Ration Card or Mobile Number for eligibility check.`,
+
+  pmay: `Pradhan Mantri Awas Yojana\n\nWhat is this scheme?\nPradhan Mantri Awas Yojana, or PMAY, is a government housing scheme that helps poor families build or buy a pucca house. The scheme provides financial assistance and interest subsidy on home loans.\n\nWho can apply?\nHouseholds that do not own a pucca house anywhere in India. EWS families with annual income below three lakh rupees, LIG families with income between three and six lakh, and MIG families with income up to eighteen lakh are eligible.\n\nHow to apply?\nStep 1 — Visit pmaymis.gov.in or your local municipal office.\nStep 2 — Fill the application form with details of your family and existing house.\nStep 3 — Submit income certificate and land documents.\nStep 4 — After approval, you will receive the subsidy credited to your bank account.\n\nBenefit — Subsidy of up to two lakh sixty-seven thousand rupees on home loan interest.`,
+
+  mgnrega: `Mahatma Gandhi National Rural Employment Guarantee Act\n\nWhat is this scheme?\nMGNREGA guarantees one hundred days of paid work per year to every rural household. Any adult member of a rural family who wants to do unskilled manual work can apply. The scheme ensures employment within fifteen days of applying.\n\nWho can apply?\nAny adult member of a rural household willing to do unskilled manual work. The applicant must be a resident of the area where they apply.\n\nHow to apply?\nStep 1 — Visit your Gram Panchayat office and register your household.\nStep 2 — Get a Job Card issued in your name.\nStep 3 — Request work whenever you need employment.\nStep 4 — Work will be provided within fifteen days, otherwise you are entitled to unemployment allowance.\n\nDocuments needed — Aadhaar Card, Residence Proof, Passport Photo.`,
+
+  mudra: `Pradhan Mantri MUDRA Yojana\n\nWhat is this scheme?\nMUDRA Yojana provides small business loans to entrepreneurs without any collateral. The scheme has three categories — Shishu provides loans up to fifty thousand rupees, Kishor provides loans from fifty thousand to five lakh, and Tarun provides loans from five lakh to ten lakh rupees.\n\nWho can apply?\nSmall business owners, street vendors, shopkeepers, artisans, and anyone wanting to start a non-farming micro or small enterprise.\n\nHow to apply?\nStep 1 — Visit any nationalized bank, regional rural bank, or microfinance institution.\nStep 2 — Fill the MUDRA loan application form.\nStep 3 — Submit your business plan and identity documents.\nStep 4 — Loan is approved without requiring any collateral or security.\n\nDocuments needed — Aadhaar Card, PAN Card, Bank Account details, Business Plan or existing business proof.`,
+
+  beti: `Beti Bachao Beti Padhao\n\nWhat is this scheme?\nBeti Bachao Beti Padhao is a national campaign launched to address the declining child sex ratio and promote education and welfare of the girl child. The scheme focuses on preventing gender-based sex selective elimination, ensuring survival of the girl child, and promoting her education.\n\nWho can benefit?\nGirl children across India, particularly in districts with low child sex ratios. The scheme benefits families with girl children below ten years of age.\n\nKey benefits include — awareness programs in schools and communities, scholarships and incentives for girl child education, and coordination with other schemes like Sukanya Samriddhi Yojana.\n\nTo apply — Visit your nearest Anganwadi centre or District Women and Child Development office to register your girl child.`,
+
+  sukanya: `Sukanya Samriddhi Yojana\n\nWhat is this scheme?\nSukanya Samriddhi Yojana is a government savings scheme specially designed for the girl child. It offers one of the highest interest rates among small savings schemes — currently eight point two percent per year — along with complete tax benefits.\n\nWho can apply?\nParents or legal guardians of a girl child below ten years of age. One account per girl child, and a maximum of two accounts per family.\n\nHow to open an account?\nStep 1 — Visit any post office or authorized bank branch.\nStep 2 — Fill the Sukanya Samriddhi account opening form.\nStep 3 — Deposit a minimum of two hundred fifty rupees to open the account.\nStep 4 — The account matures when the girl turns twenty one years old.\n\nDocuments needed — Birth Certificate of girl child, Aadhaar Card, Parent or Guardian ID proof.`,
+
+  kcc: `Kisan Credit Card Scheme\n\nWhat is this scheme?\nKisan Credit Card, or KCC, provides farmers with short-term credit at very low interest rates of just four percent per year. It helps farmers buy seeds, fertilizers, pesticides, and other agricultural inputs without cash.\n\nWho can apply?\nFarmers, tenant farmers, sharecroppers, and self-help group members engaged in agriculture and allied activities.\n\nHow to apply?\nStep 1 — Visit any cooperative bank, regional rural bank, or nationalized bank.\nStep 2 — Fill the KCC application form with your land and crop details.\nStep 3 — Submit land ownership or tenancy documents.\nStep 4 — Credit limit is determined based on your landholding and crop type.\n\nDocuments needed — Aadhaar Card, Land Records, Passport Photo, Bank Account details.`,
+
+  ujjwala: `Pradhan Mantri Ujjwala Yojana\n\nWhat is this scheme?\nUjjwala Yojana provides free LPG gas connections to women from BPL families, replacing unhealthy cooking fuels like wood and coal with clean LPG gas. This improves the health of women and children and reduces indoor air pollution.\n\nWho can apply?\nWomen aged eighteen and above from Below Poverty Line families, SC and ST households, and those listed under Pradhan Mantri Awas Yojana who do not already have an LPG connection.\n\nHow to apply?\nStep 1 — Visit your nearest LPG gas agency — Indian Oil, Bharat Gas, or HP Gas.\nStep 2 — Fill the KYC form and Ujjwala application form.\nStep 3 — Submit BPL card or ration card along with Aadhaar.\nStep 4 — Receive free gas connection and first cylinder at subsidized rate.\n\nDocuments needed — Aadhaar Card, BPL Ration Card, Bank Account details.`,
+
+  standup: `Stand Up India Scheme\n\nWhat is this scheme?\nStand Up India facilitates bank loans between ten lakh and one crore rupees to SC, ST borrowers and women entrepreneurs for setting up greenfield enterprises in manufacturing, services, or trading sector.\n\nWho can apply?\nSC and ST borrowers or women entrepreneurs who are starting a new business for the first time. The applicant must be above eighteen years of age.\n\nHow to apply?\nStep 1 — Visit the Stand Up India portal at standupmitra.in or contact your nearest bank branch.\nStep 2 — Register and fill the loan application form with your business plan.\nStep 3 — Bank will assess your business plan and provide loan sanction.\nStep 4 — Loan comes with a repayment period of seven years.\n\nDocuments needed — Aadhaar Card, PAN Card, Business Plan, Caste Certificate for SC and ST, Bank Account details.`,
+
+  atal_pension: `Atal Pension Yojana\n\nWhat is this scheme?\nAtal Pension Yojana is a pension scheme for workers in the unorganized sector. It guarantees a monthly pension between one thousand and five thousand rupees after the age of sixty, depending on the contribution amount.\n\nWho can apply?\nIndian citizens between eighteen and forty years of age who have a savings bank account and are not covered under any other statutory social security scheme.\n\nHow to apply?\nStep 1 — Visit your bank branch or use net banking or mobile banking.\nStep 2 — Fill the APY subscription form and provide your Aadhaar and mobile number.\nStep 3 — Choose your desired monthly pension amount.\nStep 4 — Auto-debit will be set up from your bank account for monthly contributions.\n\nDocuments needed — Savings Bank Account, Aadhaar Card, Mobile Number.`,
+
+  svnidhi: `PM Street Vendor AtmaNirbhar Nidhi\n\nWhat is this scheme?\nPM SVANidhi provides collateral-free loans to street vendors to help them restart their businesses and become self-reliant. It also rewards digital transactions with cashback incentives.\n\nWho can apply?\nStreet vendors operating in urban areas with a vending certificate or letter of recommendation from Urban Local Body.\n\nHow to apply?\nStep 1 — Visit the PM SVANidhi portal at pmsvanidhi.mohua.gov.in.\nStep 2 — Apply for initial loan of ten thousand rupees.\nStep 3 — Repay on time to get enhanced loan of twenty thousand, then fifty thousand rupees.\nStep 4 — Use digital payments to earn one percent cashback monthly.\n\nDocuments needed — Aadhaar Card, Bank Account, Vendor Certificate or ULB letter.`
+};
+
+const SCHEME_VIDEOS = {
+  pm_kisan: {
+    youtubeId: 'pmkisan_video',
+    searchQuery: 'PM Kisan Samman Nidhi official government India',
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=PM+Kisan+Samman+Nidhi+official+PIB+India',
+    directLinks: [
+      { label: '▶ PM-KISAN Official', url: 'https://www.youtube.com/results?search_query=PM+Kisan+Samman+Nidhi+PIB+India+official' },
+      { label: '🏛️ Official Website', url: 'https://pmkisan.gov.in/' }
+    ]
+  },
+
+  ayushman: {
+    embedUrl: 'https://www.youtube.com/embed/kV3TnTMYsxA',
+    directLinks: [
+      { label: '▶ Ayushman Bharat Video', url: 'https://www.youtube.com/watch?v=kV3TnTMYsxA' },
+      { label: '🏛️ Official Website', url: 'https://pmjay.gov.in/' }
+    ]
+  },
+
+  pmay: {
+    embedUrl: 'https://www.youtube.com/embed/Qz6qzL5RDJ0',
+    directLinks: [
+      { label: '▶ PMAY Video', url: 'https://www.youtube.com/results?search_query=Pradhan+Mantri+Awas+Yojana+official+PIB' },
+      { label: '🏛️ Official Website', url: 'https://pmaymis.gov.in/' }
+    ]
+  },
+
+  mgnrega: {
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=MGNREGA+rural+employment+guarantee+PIB+India',
+    directLinks: [
+      { label: '▶ MGNREGA Video', url: 'https://www.youtube.com/results?search_query=MGNREGA+rural+employment+India+official' },
+      { label: '🏛️ Official Website', url: 'https://nrega.dord.gov.in/MGNREGA_new/Nrega_home.aspx' }
+    ]
+  },
+
+  mudra: {
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=PM+MUDRA+Yojana+official+India+loan',
+    directLinks: [
+      { label: '▶ MUDRA Yojana Video', url: 'https://www.youtube.com/results?search_query=PM+MUDRA+Yojana+loan+official+India' },
+      { label: '🏛️ Official Website', url: 'https://www.mudra.org.in/' }
+    ]
+  },
+
+  beti: {
+    embedUrl: 'https://www.youtube.com/embed/f3zHpv6BQTY',
+    directLinks: [
+      { label: '▶ Beti Bachao Video', url: 'https://www.youtube.com/results?search_query=Beti+Bachao+Beti+Padhao+official' },
+      { label: '🏛️ Official Website', url: 'https://www.betibachaobetipadhao.org/' }
+    ]
+  },
+
+  sukanya: {
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=Sukanya+Samriddhi+Yojana+India+post+office',
+    directLinks: [
+      { label: '▶ Sukanya Samriddhi Video', url: 'https://www.youtube.com/results?search_query=Sukanya+Samriddhi+Yojana+official+India' },
+      { label: '🏛️ Official Website', url: 'https://www.indiapost.gov.in/' }
+    ]
+  },
+
+  ujjwala: {
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=PM+Ujjwala+Yojana+LPG+official+India',
+    directLinks: [
+      { label: '▶ Ujjwala Yojana Video', url: 'https://www.youtube.com/results?search_query=PM+Ujjwala+Yojana+LPG+official' },
+      { label: '🏛️ Official Website', url: 'https://www.pmuy.gov.in/' }
+    ]
+  },
+
+  kcc: {
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=Kisan+Credit+Card+scheme+India+bank',
+    directLinks: [
+      { label: '▶ KCC Scheme Video', url: 'https://www.youtube.com/results?search_query=Kisan+Credit+Card+KCC+scheme+India' },
+      { label: '🏛️ Official Website', url: 'https://www.nabard.org/' }
+    ]
+  },
+
+  standup: {
+    embedUrl: 'https://www.youtube.com/embed?listType=search&list=Stand+Up+India+scheme+SC+ST+women+entrepreneur',
+    directLinks: [
+      { label: '▶ Stand Up India Video', url: 'https://www.youtube.com/results?search_query=Stand+Up+India+scheme+SC+ST+women' },
+      { label: '🏛️ Official Website', url: 'https://www.standupmitra.in/' }
+    ]
+  }
+};
+
+let voiceUtterance = null;
+let voicePaused = false;
+
+function updateVoicePreview() {
+  const sel = document.getElementById('voiceSchemeSelect').value;
+  const preview = document.getElementById('voiceTextPreview');
+  if (sel && VOICE_SCRIPTS[sel]) {
+    preview.textContent = VOICE_SCRIPTS[sel];
+  } else {
+    preview.textContent = 'Select a scheme above to see the explanation that will be read aloud...';
+  }
+}
+
+function startVoice() {
+  const sel = document.getElementById('voiceSchemeSelect').value;
+  if (!sel) { showToast('⚠️ Please select a scheme first'); return; }
+  if (!('speechSynthesis' in window)) { showToast('❌ Your browser does not support Text-to-Speech'); return; }
+
+  window.speechSynthesis.cancel();
+  const rawText = VOICE_SCRIPTS[sel] || 'No script available for this scheme.';
+  const voiceLang = document.getElementById('voiceLangSelect').value; // e.g. 'ta-IN'
+  const langCode = voiceLang.split('-')[0];
+  const langNameMap = { en:'English', hi:'Hindi', ta:'Tamil', te:'Telugu', kn:'Kannada', bn:'Bengali', mr:'Marathi', gu:'Gujarati', ml:'Malayalam', pa:'Punjabi', ur:'Urdu' };
+  const targetLangName = langNameMap[langCode] || 'English';
+
+  const speak = (text) => {
+    voiceUtterance = new SpeechSynthesisUtterance(text);
+    voiceUtterance.rate = parseFloat(document.getElementById('voiceRate').value);
+    voiceUtterance.pitch = parseFloat(document.getElementById('voicePitch').value);
+    voiceUtterance.lang = voiceLang;
+
+    const voices = window.speechSynthesis.getVoices();
+    const match = voices.find(v => v.lang.startsWith(langCode));
+    if (match) voiceUtterance.voice = match;
+    else if (langCode !== 'en') showToast(`ℹ️ No ${targetLangName} voice found on this device — playing translated text with a default voice.`);
+
+    voiceUtterance.onstart = () => {
+      document.getElementById('voicePlayBtn').classList.add('speaking');
+      document.getElementById('voicePlayBtn').innerHTML = '🔊 Speaking...';
+      document.getElementById('voiceWave').classList.remove('hidden');
+    };
+    voiceUtterance.onend = () => {
+      document.getElementById('voicePlayBtn').classList.remove('speaking');
+      document.getElementById('voicePlayBtn').innerHTML = '▶ Play Explanation';
+      document.getElementById('voiceWave').classList.add('hidden');
+      voicePaused = false;
+    };
+    voiceUtterance.onerror = () => {
+      document.getElementById('voicePlayBtn').classList.remove('speaking');
+      document.getElementById('voicePlayBtn').innerHTML = '▶ Play Explanation';
+      document.getElementById('voiceWave').classList.add('hidden');
+    };
+
+    window.speechSynthesis.speak(voiceUtterance);
+    voicePaused = false;
+  };
+
+  if (langCode === 'en') {
+    speak(rawText);
+  } else {
+    document.getElementById('voicePlayBtn').innerHTML = `⏳ ${t('translating')}`;
+    translateText(rawText, targetLangName).then(translated => {
+      document.getElementById('voiceTextPreview').textContent = translated;
+      speak(translated);
+    });
+  }
+}
+
+function stopVoice() {
+  window.speechSynthesis.cancel();
+  document.getElementById('voicePlayBtn').classList.remove('speaking');
+  document.getElementById('voicePlayBtn').innerHTML = '▶ Play Explanation';
+  document.getElementById('voiceWave').classList.add('hidden');
+  voicePaused = false;
+}
+
+function pauseVoice() {
+  if (!voicePaused) {
+    window.speechSynthesis.pause();
+    voicePaused = true;
+    document.getElementById('voicePauseBtn').innerHTML = '▶ Resume';
+  } else {
+    window.speechSynthesis.resume();
+    voicePaused = false;
+    document.getElementById('voicePauseBtn').innerHTML = '⏸ Pause';
+  }
+}
+
+// ─── SCHEME VIDEO ───
+function loadSchemeVideo() {
+  const sel = document.getElementById('videoSchemeSelect').value;
+  const frameDiv = document.getElementById('videoFrame');
+  const linksDiv = document.getElementById('videoLinks');
+
+  if (!sel || !SCHEME_VIDEOS[sel]) {
+    frameDiv.innerHTML = `<div class="video-placeholder"><div class="play-icon">▶</div><p>Select a scheme above to load the video</p></div>`;
+    linksDiv.innerHTML = '';
+    return;
+  }
+
+  const v = SCHEME_VIDEOS[sel];
+  frameDiv.innerHTML = `
+    <div class="video-frame-wrap">
+      <iframe src="${v.embedUrl}" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        onerror="this.parentElement.innerHTML='<div style=\'padding:40px;text-align:center;color:white;\'>⚠️ Video could not load. Use the links below to watch on YouTube.</div>'">
+      </iframe>
+    </div>`;
+
+  linksDiv.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">🔗 Watch Directly:</div>
+    <div class="video-links">
+      ${v.directLinks.map(l => `<a href="${l.url}" target="_blank" class="video-link-chip">${l.label}</a>`).join('')}
+      <a href="https://www.youtube.com/results?search_query=${encodeURIComponent(document.getElementById('videoSchemeSelect').options[document.getElementById('videoSchemeSelect').selectedIndex].text + ' government India official')}" target="_blank" class="video-link-chip">🔍 Search YouTube</a>
+    </div>`;
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ACCOUNTS — talks to the Node/Express + MongoDB auth server
+// (see /server folder). Runs on a separate port from Flask.
+// ═══════════════════════════════════════════════════════════════
+// 🔧 DEPLOY: after you deploy the Node auth server and the React client,
+// paste their real HTTPS URLs here (no trailing slash). Cloud hosts like
+// Render/Railway give each service its own domain — they do NOT let you
+// reach another service via ":4000" on the same hostname the way a VPS
+// would, so that trick is replaced with these two constants.
+const PROD_AUTH_BACKEND = "https://schemesaathi-auth.onrender.com";   // 🔧 replace with your deployed Node/Express URL
+const PROD_AUTH_CLIENT_URL = "https://schemesaathi-account.onrender.com"; // 🔧 replace with your deployed React app URL
+
+const AUTH_BACKEND = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? "http://localhost:4000"
+  : PROD_AUTH_BACKEND;
+// URL of the React auth app (login/signup/account), built separately in /client
+const AUTH_CLIENT_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? "http://localhost:5173"
+  : PROD_AUTH_CLIENT_URL;
+
+function getAuthToken() { return localStorage.getItem('ss_token'); }
+function getAuthUser() { try { return JSON.parse(localStorage.getItem('ss_user') || 'null'); } catch { return null; } }
+
+async function refreshAccountUI() {
+  const btn = document.getElementById('accountBtnLabel');
+  const token = getAuthToken();
+  if (!token) { btn.textContent = t('login'); return; }
+  try {
+    const res = await fetch(`${AUTH_BACKEND}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) throw new Error('invalid session');
+    const data = await res.json();
+    localStorage.setItem('ss_user', JSON.stringify(data.user));
+    btn.textContent = `👋 ${data.user.name.split(' ')[0]}`;
+    if (data.user.preferredLanguage && data.user.preferredLanguage !== currentLang) {
+      document.getElementById('globalLang').value = data.user.preferredLanguage;
+      changeLanguage(data.user.preferredLanguage);
+    }
+  } catch (e) {
+    localStorage.removeItem('ss_token'); localStorage.removeItem('ss_user');
+    btn.textContent = t('login');
+  }
+}
+
+function onAccountClick() {
+  const token = getAuthToken();
+  if (!token) {
+    window.open(`${AUTH_CLIENT_URL}?returnTo=${encodeURIComponent(window.location.href)}`, '_blank');
+    return;
+  }
+  const user = getAuthUser();
+  const doLogout = confirm(`${t('account')}: ${user ? user.name : ''}\n\nOK = ${t('logout')}, Cancel = ${t('account')}`);
+  if (doLogout) {
+    localStorage.removeItem('ss_token'); localStorage.removeItem('ss_user');
+    refreshAccountUI();
+    showToast('👋 Logged out');
+  } else {
+    window.open(`${AUTH_CLIENT_URL}/account?returnTo=${encodeURIComponent(window.location.href)}`, '_blank');
+  }
+}
+
+// The React auth app writes the JWT via window.postMessage back to this tab
+// when it runs on a different port than this page:
+window.addEventListener('message', (evt) => {
+  if (evt.data && evt.data.type === 'SS_AUTH' && evt.data.token) {
+    localStorage.setItem('ss_token', evt.data.token);
+    localStorage.setItem('ss_user', JSON.stringify(evt.data.user || {}));
+    refreshAccountUI();
+    showToast('✅ Logged in successfully');
+  }
+  if (evt.data && evt.data.type === 'SS_LOGOUT') {
+    localStorage.removeItem('ss_token'); localStorage.removeItem('ss_user');
+    refreshAccountUI();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// DYNAMIC CONTENT TRANSLATION
+// The 12-language dictionary above covers all static UI chrome.
+// Scheme names/descriptions and AI answers come from the Flask
+// backend in English. When a non-English language is selected we
+// machine-translate that dynamic text using the free MyMemory API
+// (no key needed) and cache results so we don't re-translate the
+// same string twice. This runs client-side in the browser.
+// ═══════════════════════════════════════════════════════════════
+const LANG_CODE = {
+  English:'en', Hindi:'hi', Tamil:'ta', Telugu:'te', Kannada:'kn', Bengali:'bn',
+  Marathi:'mr', Gujarati:'gu', Malayalam:'ml', Punjabi:'pa', Odia:'or', Urdu:'ur'
+};
+const _translateCache = JSON.parse(localStorage.getItem('ss_translate_cache') || '{}');
+function _saveTranslateCache() {
+  try { localStorage.setItem('ss_translate_cache', JSON.stringify(_translateCache)); } catch {}
+}
+
+async function translateText(text, targetLang) {
+  if (!text || !text.trim() || targetLang === 'English') return text;
+  const code = LANG_CODE[targetLang] || 'en';
+  const cacheKey = `${code}::${text}`;
+  if (_translateCache[cacheKey]) return _translateCache[cacheKey];
+  try {
+    const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(text.slice(0, 480))}&langpair=en|${code}`);
+    const data = await res.json();
+    const translated = data?.responseData?.translatedText;
+    if (translated && !/MYMEMORY WARNING/i.test(translated)) {
+      _translateCache[cacheKey] = translated;
+      _saveTranslateCache();
+      return translated;
+    }
+  } catch (e) { /* offline or rate-limited — fall back to English */ }
+  return text;
+}
+
+// Translates every element with data-dyn="1" inside a container, in place.
+// Call after filling a container's innerHTML with fresh English content.
+async function translateDynamicContainer(containerEl) {
+  if (currentLang === 'English' || !containerEl) return;
+  const nodes = containerEl.querySelectorAll('[data-dyn="1"]');
+  for (const node of nodes) {
+    const original = node.getAttribute('data-orig') || node.textContent;
+    node.setAttribute('data-orig', original);
+    translateText(original, currentLang).then(translated => { node.textContent = translated; });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// OFFICE LOCATOR — drag-and-drop pin (Leaflet) + nearby government
+// offices via the free OpenStreetMap Overpass API (no key needed)
+// ═══════════════════════════════════════════════════════════════
+let officeMap, officeMarker;
+
+function initOfficeMap() {
+  if (officeMap) return;
+  const startLat = 11.0168, startLng = 76.9558; // Coimbatore, sensible default
+  officeMap = L.map('officeMap').setView([startLat, startLng], 12);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors', maxZoom: 19
+  }).addTo(officeMap);
+
+  officeMarker = L.marker([startLat, startLng], { draggable: true }).addTo(officeMap)
+    .bindPopup('Drag me to your location').openPopup();
+
+  officeMarker.on('dragend', () => {
+    const pos = officeMarker.getLatLng();
+    document.getElementById('officeStatus').textContent = `📍 Pin at ${pos.lat.toFixed(4)}, ${pos.lng.toFixed(4)}`;
+  });
+
+  officeMap.on('click', (e) => {
+    officeMarker.setLatLng(e.latlng);
+    document.getElementById('officeStatus').textContent = `📍 Pin at ${e.latlng.lat.toFixed(4)}, ${e.latlng.lng.toFixed(4)}`;
+  });
+}
+
+function useMyLocation() {
+  initOfficeMap();
+  if (!navigator.geolocation) { showToast('❌ Geolocation not supported by your browser'); return; }
+  document.getElementById('officeStatus').textContent = '📡 Locating you...';
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const { latitude, longitude } = pos.coords;
+      officeMap.setView([latitude, longitude], 14);
+      officeMarker.setLatLng([latitude, longitude]);
+      document.getElementById('officeStatus').textContent = `📍 Pin at ${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+      searchNearbyOffices();
+    },
+    () => { document.getElementById('officeStatus').textContent = '⚠️ Could not get your location — drag the pin manually.'; },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+async function searchNearbyOffices() {
+  initOfficeMap();
+  const pos = officeMarker.getLatLng();
+  const resultsDiv = document.getElementById('officeResults');
+  resultsDiv.innerHTML = `<div class="loading-state" style="padding:20px;"><div class="spinner"></div><span>${t('searching')}</span></div>`;
+
+  const radius = 6000;
+  const query = `
+    [out:json][timeout:20];
+    (
+      node["office"="government"](around:${radius},${pos.lat},${pos.lng});
+      node["amenity"="townhall"](around:${radius},${pos.lat},${pos.lng});
+      node["amenity"="post_office"](around:${radius},${pos.lat},${pos.lng});
+      way["office"="government"](around:${radius},${pos.lat},${pos.lng});
+      way["amenity"="townhall"](around:${radius},${pos.lat},${pos.lng});
+    );
+    out center 20;
+  `;
+  try {
+    const res = await fetch('https://overpass-api.de/api/interpreter', { method: 'POST', body: query });
+    const data = await res.json();
+    const elements = (data.elements || []).slice(0, 12);
+
+    officeMap.eachLayer(layer => { if (layer instanceof L.Marker && layer !== officeMarker) officeMap.removeLayer(layer); });
+
+    if (!elements.length) {
+      resultsDiv.innerHTML = `<div style="padding:20px;text-align:center;color:var(--gray-500);">No listed government offices found within 6km on OpenStreetMap. Try dragging the pin to a town center, or check your district's official portal.</div>`;
+      return;
+    }
+
+    resultsDiv.innerHTML = '';
+    elements.forEach(el => {
+      const lat = el.lat || el.center?.lat, lng = el.lon || el.center?.lon;
+      if (!lat || !lng) return;
+      const name = el.tags?.name || el.tags?.['name:en'] || 'Government Office';
+      const type = el.tags?.office || el.tags?.amenity || 'office';
+      const dist = officeMap.distance([pos.lat, pos.lng], [lat, lng]);
+      L.marker([lat, lng]).addTo(officeMap).bindPopup(`<strong>${name}</strong><br/>${type}`);
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background:white;border:1px solid var(--gray-200);border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;';
+      card.innerHTML = `
+        <div>
+          <div style="font-weight:700;font-size:14px;" data-dyn="1">${name}</div>
+          <div style="font-size:12px;color:var(--gray-500);text-transform:capitalize;">${type.replace(/_/g,' ')} · ${(dist/1000).toFixed(1)} km away</div>
+        </div>
+        <a href="https://www.openstreetmap.org/directions?to=${lat},${lng}" target="_blank" class="btn btn-outline" style="padding:6px 12px;font-size:12px;">🧭 Directions</a>
+      `;
+      resultsDiv.appendChild(card);
+    });
+    translateDynamicContainer(resultsDiv);
+  } catch (e) {
+    resultsDiv.innerHTML = `<div style="padding:20px;text-align:center;color:var(--gray-500);">⚠️ Could not reach the office directory right now. Please try again in a moment.</div>`;
+  }
+}
+
+// Lazily size the map correctly the first time its tab is opened
+const _origSwitchPanel = switchPanel;
+switchPanel = function(name, el) {
+  _origSwitchPanel(name, el);
+  if (name === 'office') setTimeout(() => { initOfficeMap(); officeMap.invalidateSize(); }, 50);
+};
+
+// ─── INIT ───
+applyTranslations();
+refreshAccountUI();
+</script>
+</body>
+</html>
